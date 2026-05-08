@@ -2,7 +2,6 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from datetime import datetime
 import sqlite3
-import os
 
 # ←←← ВСТАВЬ СВОЙ ТОКЕН СЮДА ↓↓↓
 TOKEN = '8474300409:AAHxtqti-SYLiJNwUoRPJzfYxBujQquaj3I'
@@ -12,8 +11,8 @@ bot = telebot.TeleBot(TOKEN)
 # Твой ID для уведомлений
 MY_ID = 8797871373
 
-# Путь к базе данных
-DB_FILE = 'instagram_users.db'
+# Путь к базе на Railway Volume
+DB_FILE = '/app/instagram_users.db'
 
 
 def init_db():
@@ -33,8 +32,7 @@ def init_db():
 
 
 def register_instagram_user(user):
-    """Возвращает True — если пользователь новый (уведомление нужно)
-       False — если уже был (уведомление не шлём)"""
+    """Возвращает True — если новый (уведомление нужно)"""
     user_id = user.id
     username = f"@{user.username}" if user.username else None
     full_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
@@ -43,7 +41,6 @@ def register_instagram_user(user):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
 
-    # Проверяем, есть ли уже такой user_id
     c.execute("SELECT visit_count FROM instagram_users WHERE user_id = ?", (user_id,))
     result = c.fetchone()
 
@@ -57,7 +54,7 @@ def register_instagram_user(user):
         conn.close()
         return True
     else:
-        # Повторный заход — обновляем
+        # Повторный
         new_count = result[0] + 1
         c.execute("""UPDATE instagram_users 
                      SET last_seen = ?, visit_count = ? 
@@ -85,7 +82,6 @@ def start(message):
     if is_from_instagram:
         welcome_text = "👋 Привет! Ты пришёл из Instagram.\n\nВот вся информация по авто из Китая, Японии и Кореи:"
 
-        # Регистрируем пользователя и решаем, нужно ли уведомление
         if register_instagram_user(message.from_user):
             try:
                 user = message.from_user
@@ -113,8 +109,8 @@ def start(message):
     )
 
 
-# Инициализация базы при старте бота!
+# Инициализация базы
 init_db()
-print("✅ Бот запущен и работает 24/7...")
-print(f"📊 База данных Instagram-пользователей: {DB_FILE}")
+print("✅ Бот запущен на Railway с Persistent Volume")
+print(f"📊 База данных: {DB_FILE}")
 bot.infinity_polling()
