@@ -9,7 +9,7 @@ bot = telebot.TeleBot(TOKEN)
 
 MY_ID = 8797871373
 
-# Автоопределение пути: Railway или локально
+# Правильное определение пути
 DB_FILE = '/app/instagram_users.db' if os.path.exists('/app') else 'instagram_users.db'
 
 
@@ -27,25 +27,31 @@ def init_db():
 
 
 def register_instagram_user(user):
-    user_id = user.id
-    username = f"@{user.username}" if user.username else None
-    full_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
+    try:
+        user_id = user.id
+        username = f"@{user.username}" if user.username else None
+        full_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
 
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
 
-    c.execute("SELECT user_id FROM instagram_users WHERE user_id = ?", (user_id,))
-    if c.fetchone() is None:
-        c.execute("INSERT INTO instagram_users (user_id, username, full_name) VALUES (?, ?, ?)",
-                  (user_id, username, full_name))
-        conn.commit()
-        conn.close()
-        return True
-    else:
-        c.execute("UPDATE instagram_users SET username = ?, full_name = ? WHERE user_id = ?",
-                  (username, full_name, user_id))
-        conn.commit()
-        conn.close()
+        c.execute("SELECT user_id FROM instagram_users WHERE user_id = ?", (user_id,))
+        if c.fetchone() is None:
+            # Новый клиент
+            c.execute("INSERT INTO instagram_users (user_id, username, full_name) VALUES (?, ?, ?)",
+                      (user_id, username, full_name))
+            conn.commit()
+            conn.close()
+            return True
+        else:
+            # Обновляем данные
+            c.execute("UPDATE instagram_users SET username = ?, full_name = ? WHERE user_id = ?",
+                      (username, full_name, user_id))
+            conn.commit()
+            conn.close()
+            return False
+    except Exception as e:
+        print(f"❌ Ошибка регистрации: {e}")
         return False
 
 
@@ -59,33 +65,39 @@ def main_menu():
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    is_from_instagram = message.text and "INSTA" in message.text
+    try:
+        is_from_instagram = message.text and "INSTA" in message.text
 
-    if is_from_instagram:
-        welcome_text = "👋 Привет! Ты пришёл из Instagram.\n\nВот вся информация по авто из Китая, Японии и Кореи:"
-        if register_instagram_user(message.from_user):
-            user = message.from_user
-            notification = f"""🔔 НОВЫЙ клиент из Instagram ✅
+        if is_from_instagram:
+            welcome_text = "👋 Привет! Ты пришёл из Instagram.\n\nВот вся информация по авто из Китая, Японии и Кореи:"
+            if register_instagram_user(message.from_user):
+                user = message.from_user
+                notification = f"""🔔 НОВЫЙ клиент из Instagram ✅
 Юзер: @{user.username or 'нет'}
 Имя: {user.first_name or ''} {user.last_name or ''}
 Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}"""
-            bot.send_message(MY_ID, notification)
-    else:
-        welcome_text = "👋 Привет!\n\nВот вся информация по авто из Китая, Японии и Кореи:"
+                bot.send_message(MY_ID, notification)
+        else:
+            welcome_text = "👋 Привет!\n\nВот вся информация по авто из Китая, Японии и Кореи:"
 
-    bot.send_message(message.chat.id, welcome_text, reply_markup=main_menu())
+        bot.send_message(message.chat.id, welcome_text, reply_markup=main_menu())
+    except Exception as e:
+        print(f"Ошибка в start: {e}")
 
 
 @bot.message_handler(commands=['stats'])
 def stats(message):
     if message.from_user.id != MY_ID:
         return
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute("SELECT COUNT(*) FROM instagram_users")
-    total = c.fetchone()[0]
-    conn.close()
-    bot.send_message(message.chat.id, f"📊 Всего уникальных клиентов: {total}")
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute("SELECT COUNT(*) FROM instagram_users")
+        total = c.fetchone()[0]
+        conn.close()
+        bot.send_message(message.chat.id, f"📊 Всего уникальных клиентов: {total}")
+    except:
+        bot.send_message(message.chat.id, "База пока пуста")
 
 
 init_db()
