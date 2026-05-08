@@ -5,11 +5,11 @@ from telebot import types
 from datetime import datetime
 
 # ===================== НАСТРОЙКИ =====================
-TOKEN = os.getenv('BOT_TOKEN')  # ← будет браться из Railway Variables
-YOUR_CHAT_ID = int(os.getenv('YOUR_CHAT_ID'))  # ← твой Telegram ID
+TOKEN = os.getenv('BOT_TOKEN')
+YOUR_CHAT_ID = int(os.getenv('YOUR_CHAT_ID'))
 
 bot = telebot.TeleBot(TOKEN)
-DB_NAME = 'instagram_users.db'
+DB_NAME = '/data/instagram_users.db'   # ← теперь база в Volume!
 
 # ===================== БАЗА ДАННЫХ =====================
 def init_db():
@@ -69,17 +69,20 @@ def start(message):
         if is_new_instagram_user(user.id):
             save_instagram_user(user.id, user.username, user.first_name)
             notify_new_client(message)
-            bot.send_message(message.chat.id, "✅ Привет! Ты пришёл из Instagram. Я запомнил тебя.")
+            welcome_text = "✅ Привет! Ты пришёл из Instagram.\n\nВот полезные ссылки 👇"
         else:
-            bot.send_message(message.chat.id, "👋 Привет! Ты уже был у нас по ссылке из Instagram.")
+            welcome_text = "👋 Привет! Ты уже был у нас по ссылке из Instagram.\n\nВот полезные ссылки 👇"
+
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        btn1 = types.InlineKeyboardButton("📢 Telegram канал", url="https://t.me/dealer_auto")
+        btn2 = types.InlineKeyboardButton("🚀 Канал в МАХ", url="https://max.ru/join/zA6Fz1aond_GxUYLWJDjFGWLRz2H5l0PoES6koN6WnI")
+        btn3 = types.InlineKeyboardButton("📸 Instagram", url="https://www.instagram.com/autodealer138?igsh=cnFwMW5zMWVnZGFw&utm_source=qr")
+        markup.add(btn1, btn2, btn3)
+
+        bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
+
     else:
         bot.send_message(message.chat.id, "👋 Привет! Это бот Авто из Азии.")
-
-    # Главное меню
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add("🔍 Подобрать авто", "📦 Рассчитать стоимость")
-    markup.add("❓ Задать вопрос", "📞 Консультация")
-    bot.send_message(message.chat.id, "Выбери действие:", reply_markup=markup)
 
 @bot.message_handler(commands=['db'])
 def send_db(message):
@@ -92,22 +95,8 @@ def send_db(message):
     else:
         bot.send_message(message.chat.id, "⛔ Доступ запрещён.")
 
-# ===================== ОБРАБОТКА КНОПОК =====================
-@bot.message_handler(func=lambda message: True)
-def handle_text(message):
-    if message.text == "🔍 Подобрать авто":
-        bot.send_message(message.chat.id, "Напиши марку и модель авто из Азии, которое ищешь 👇")
-    elif message.text == "📦 Рассчитать стоимость":
-        bot.send_message(message.chat.id, "Отправь ссылку на авто с аукциона (Copart, IAAI, Manheim и т.д.)")
-    elif message.text == "❓ Задать вопрос":
-        bot.send_message(message.chat.id, "Задай свой вопрос — я передам менеджеру")
-    elif message.text == "📞 Консультация":
-        bot.send_message(message.chat.id, "📲 Менеджер свяжется с тобой в ближайшее время!")
-    else:
-        bot.send_message(message.chat.id, "✅ Записал. Скоро ответим!")
-
 # ===================== ЗАПУСК =====================
 if __name__ == "__main__":
     init_db()
-    print("🚀 Бот запущен на Railway...")
+    print("🚀 Бот запущен на Railway... База в /data/instagram_users.db")
     bot.infinity_polling()
