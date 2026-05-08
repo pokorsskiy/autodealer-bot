@@ -3,7 +3,6 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from datetime import datetime
 import sqlite3
 import os
-import traceback
 
 TOKEN = '8474300409:AAHxtqti-SYLiJNwUoRPJzfYxBujQquaj3I'
 bot = telebot.TeleBot(TOKEN)
@@ -40,13 +39,13 @@ def register_instagram_user(user):
             c.execute("INSERT INTO instagram_users (user_id, username, full_name) VALUES (?, ?, ?)",
                       (user_id, username, full_name))
             conn.commit()
-            print(f"✅ Новый клиент сохранён: {user_id}")
+            print(f"✅ Новый клиент сохранён: {user_id} | {username}")
             conn.close()
             return True
         conn.close()
         return False
     except Exception as e:
-        print(f"❌ Ошибка регистрации: {e}")
+        print(f"❌ Ошибка базы: {e}")
         return False
 
 
@@ -89,8 +88,8 @@ def stats(message):
         total = c.fetchone()[0]
         conn.close()
         bot.send_message(message.chat.id, f"📊 Всего уникальных клиентов: {total}")
-    except Exception as e:
-        bot.send_message(message.chat.id, f"Ошибка stats: {e}")
+    except:
+        bot.send_message(message.chat.id, "База пока пуста")
 
 
 @bot.message_handler(commands=['db'])
@@ -100,28 +99,21 @@ def send_db_file(message):
         return
 
     try:
-        print(f"📤 Команда /db вызвана. Файл существует: {os.path.exists(DB_FILE)}")
-
         if os.path.exists(DB_FILE):
-            file_size = os.path.getsize(DB_FILE)
-            print(f"📤 Отправляю файл размером {file_size} байт")
-
-            with open(DB_FILE, 'rb') as db_file:
+            size = os.path.getsize(DB_FILE)
+            with open(DB_FILE, 'rb') as f:
                 bot.send_document(
                     message.chat.id,
-                    db_file,
-                    caption=f"📁 instagram_users.db\nРазмер: {file_size} байт\nОткрывай в DB Browser for SQLite",
-                    filename="instagram_users.db"
+                    f,
+                    caption=f"📁 instagram_users.db\nРазмер: {size} байт\nОткрывай в DB Browser for SQLite"
                 )
             bot.send_message(message.chat.id, "✅ Файл базы отправлен!")
         else:
             bot.send_message(message.chat.id, "❌ Файл базы ещё не создан")
     except Exception as e:
-        error_text = f"❌ Ошибка при отправке /db:\n{str(e)}\n{traceback.format_exc()}"
-        print(error_text)
-        bot.send_message(message.chat.id, error_text)
+        bot.send_message(message.chat.id, f"❌ Ошибка: {e}")
 
 
 init_db()
-print("✅ Бот запущен успешно | /db улучшен")
+print("✅ Бот запущен успешно | /db исправлен")
 bot.infinity_polling()
