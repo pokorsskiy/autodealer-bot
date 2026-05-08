@@ -3,31 +3,32 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from datetime import datetime
 import sqlite3
 import os
+import traceback
 
 TOKEN = '8474300409:AAHxtqti-SYLiJNwUoRPJzfYxBujQquaj3I'
 bot = telebot.TeleBot(TOKEN)
 
 MY_ID = 8797871373
-
-# Путь к базе
 DB_FILE = '/app/instagram_users.db' if os.path.exists('/app') else 'instagram_users.db'
 
 
 def init_db():
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS instagram_users (
-                    user_id INTEGER PRIMARY KEY,
-                    username TEXT,
-                    full_name TEXT
-                )''')
-    conn.commit()
-    conn.close()
-    print(f"✅ База данных готова → {DB_FILE}")
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS instagram_users (
+                        user_id INTEGER PRIMARY KEY,
+                        username TEXT,
+                        full_name TEXT
+                    )''')
+        conn.commit()
+        conn.close()
+        print(f"✅ База готова → {DB_FILE}")
+    except Exception as e:
+        print(f"❌ Ошибка init_db: {e}")
 
 
 def register_instagram_user(user):
-    """Возвращает True, если клиент новый"""
     try:
         user_id = user.id
         username = f"@{user.username}" if user.username else None
@@ -41,13 +42,13 @@ def register_instagram_user(user):
             c.execute("INSERT INTO instagram_users (user_id, username, full_name) VALUES (?, ?, ?)",
                       (user_id, username, full_name))
             conn.commit()
-            print(f"✅ Новый клиент сохранён: {user_id} - {username}")
+            print(f"✅ Новый клиент сохранён: {user_id}")
             conn.close()
             return True
         conn.close()
         return False
     except Exception as e:
-        print(f"❌ Ошибка базы: {e}")
+        print(f"❌ Ошибка register: {e}")
         return False
 
 
@@ -62,25 +63,26 @@ def main_menu():
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    is_from_instagram = message.text and "INSTA" in message.text
+    try:
+        print(f"Получен /start от {message.from_user.id}")
+        is_from_instagram = message.text and "INSTA" in message.text
 
-    if is_from_instagram:
-        welcome_text = "👋 Привет! Ты пришёл из Instagram.\n\nВот вся информация по авто из Китая, Японии и Кореи:"
-        if register_instagram_user(message.from_user):
-            user = message.from_user
-            notification = f"""🔔 НОВЫЙ клиент из Instagram ✅
-Юзер: @{user.username or 'нет'}
-Имя: {user.first_name or ''} {user.last_name or ''}
-Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}"""
-            bot.send_message(MY_ID, notification)
-    else:
-        welcome_text = "👋 Привет!\n\nВот вся информация по авто из Китая, Японии и Кореи:"
+        if is_from_instagram:
+            welcome_text = "👋 Привет! Ты пришёл из Instagram.\n\nВот вся информация по авто из Китая, Японии и Кореи:"
+            if register_instagram_user(message.from_user):
+                user = message.from_user
+                bot.send_message(MY_ID, f"🔔 НОВЫЙ клиент!\nЮзер: @{user.username or 'нет'}")
+        else:
+            welcome_text = "👋 Привет!\n\nВот вся информация по авто из Китая, Японии и Кореи:"
 
-    bot.send_message(message.chat.id, welcome_text, reply_markup=main_menu())
+        bot.send_message(message.chat.id, welcome_text, reply_markup=main_menu())
+    except Exception as e:
+        print(f"Ошибка в start: {e}")
 
 
 @bot.message_handler(commands=['stats'])
 def stats(message):
+    print(f"Получена команда /stats от {message.from_user.id}")
     if message.from_user.id != MY_ID:
         return
     try:
@@ -90,32 +92,28 @@ def stats(message):
         total = c.fetchone()[0]
         conn.close()
         bot.send_message(message.chat.id, f"📊 Всего уникальных клиентов: {total}")
-    except:
-        bot.send_message(message.chat.id, "База пока пуста")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"Ошибка stats: {e}")
 
 
 @bot.message_handler(commands=['db'])
 def send_db_file(message):
+    print(f"Получена команда /db от {message.from_user.id}")
     if message.from_user.id != MY_ID:
         bot.send_message(message.chat.id, "⛔ Доступ запрещён")
         return
-
     try:
         if os.path.exists(DB_FILE):
             size = os.path.getsize(DB_FILE)
             with open(DB_FILE, 'rb') as f:
-                bot.send_document(
-                    message.chat.id,
-                    f,
-                    caption=f"📁 instagram_users.db\nРазмер: {size} байт\nОткрывай в DB Browser for SQLite или PyCharm"
-                )
-            bot.send_message(message.chat.id, "✅ Файл базы отправлен!")
+                bot.send_document(message.chat.id, f, caption=f"📁 instagram_users.db\nРазмер: {size} байт")
+            bot.send_message(message.chat.id, "✅ Файл отправлен!")
         else:
-            bot.send_message(message.chat.id, "❌ Файл базы ещё не создан")
+            bot.send_message(message.chat.id, "❌ Файл базы не найден")
     except Exception as e:
-        bot.send_message(message.chat.id, f"❌ Ошибка: {e}")
+        bot.send_message(message.chat.id, f"❌ Ошибка /db: {e}")
 
 
 init_db()
-print("✅ Бот запущен успешно с базой данных!")
+print("✅ Бот запущен успешно | Отладка включена")
 bot.infinity_polling()
