@@ -77,8 +77,8 @@ def start(message):
         btn1 = types.InlineKeyboardButton("📢 Telegram канал", url="https://t.me/dealer_auto")
         btn2 = types.InlineKeyboardButton("🚀 Канал в МАХ", url="https://max.ru/join/zA6Fz1aond_GxUYLWJDjFGWLRz2H5l0PoES6koN6WnI")
         btn3 = types.InlineKeyboardButton("📸 Instagram", url="https://www.instagram.com/autodealer138?igsh=cnFwMW5zMWVnZGFw&utm_source=qr")
-        btn4 = types.InlineKeyboardButton("🔔 Заказать", url="https: // t.me / dealer_auto / 714")
-        markup.add(btn1, btn2, btn3)
+        btn4 = types.InlineKeyboardButton("🔔 Заказать", url="https://t.me/dealer_auto/714")
+        markup.add(btn1, btn2, btn3, btn4)
 
         bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
 
@@ -91,7 +91,7 @@ def start(message):
         btn3 = types.InlineKeyboardButton("📸 Instagram",
                                           url="https://www.instagram.com/autodealer138?igsh=cnFwMW5zMWVnZGFw&utm_source=qr")
         btn4 = types.InlineKeyboardButton("🔔 Заказать", url="https: // t.me / dealer_auto / 714")
-        markup.add(btn1, btn2, btn3)
+        markup.add(btn1, btn2, btn3, btn4)
 
         bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
 
