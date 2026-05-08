@@ -9,7 +9,6 @@ bot = telebot.TeleBot(TOKEN)
 
 MY_ID = 8797871373
 
-# Правильное определение пути
 DB_FILE = '/app/instagram_users.db' if os.path.exists('/app') else 'instagram_users.db'
 
 
@@ -34,24 +33,19 @@ def register_instagram_user(user):
 
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
-
         c.execute("SELECT user_id FROM instagram_users WHERE user_id = ?", (user_id,))
         if c.fetchone() is None:
-            # Новый клиент
             c.execute("INSERT INTO instagram_users (user_id, username, full_name) VALUES (?, ?, ?)",
                       (user_id, username, full_name))
             conn.commit()
+            print(f"✅ Новый клиент сохранён: {user_id}")
             conn.close()
             return True
         else:
-            # Обновляем данные
-            c.execute("UPDATE instagram_users SET username = ?, full_name = ? WHERE user_id = ?",
-                      (username, full_name, user_id))
-            conn.commit()
             conn.close()
             return False
     except Exception as e:
-        print(f"❌ Ошибка регистрации: {e}")
+        print(f"❌ Ошибка сохранения в базу: {e}")
         return False
 
 
@@ -82,7 +76,7 @@ def start(message):
 
         bot.send_message(message.chat.id, welcome_text, reply_markup=main_menu())
     except Exception as e:
-        print(f"Ошибка в start: {e}")
+        print(f"Ошибка в обработчике: {e}")
 
 
 @bot.message_handler(commands=['stats'])
