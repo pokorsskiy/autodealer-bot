@@ -39,7 +39,7 @@ def register_instagram_user(user):
             c.execute("INSERT INTO instagram_users (user_id, username, full_name) VALUES (?, ?, ?)",
                       (user_id, username, full_name))
             conn.commit()
-            print(f"✅ Новый клиент сохранён: {user_id} | {username}")
+            print(f"✅ Новый клиент сохранён: {user_id}")
             conn.close()
             return True
         conn.close()
@@ -102,16 +102,13 @@ def send_db_file(message):
         if os.path.exists(DB_FILE):
             size = os.path.getsize(DB_FILE)
             with open(DB_FILE, 'rb') as f:
-                bot.send_document(
-                    message.chat.id,
-                    f,
-                    caption=f"📁 instagram_users.db\nРазмер: {size} байт\nОткрывай в DB Browser for SQLite"
-                )
+                bot.send_document(message.chat.id, f,
+                                  caption=f"📁 instagram_users.db\nРазмер: {size} байт\nОткрывай в DB Browser for SQLite")
             bot.send_message(message.chat.id, "✅ Файл базы отправлен!")
         else:
             bot.send_message(message.chat.id, "❌ Файл базы ещё не создан")
     except Exception as e:
-        bot.send_message(message.chat.id, f"❌ Ошибка: {e}")
+        bot.send_message(message.chat.id, f"❌ Ошибка отправки файла:\n{e}")
 
 
 init_db()
