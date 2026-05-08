@@ -69,9 +69,9 @@ def start(message):
         if is_new_instagram_user(user.id):
             save_instagram_user(user.id, user.username, user.first_name)
             notify_new_client(message)
-            welcome_text = "✅ Привет! Ты пришёл из Instagram.\n\nВот полезные ссылки 👇"
+            welcome_text = "✅ Привет! Ты пришёл из Instagram.\n\nВся информация для Заказа в шапке профиля в Телеграм канале\n\nВот полезные ссылки 👇"
         else:
-            welcome_text = "👋 Привет! Ты уже был у нас.\n\nВот полезные ссылки 👇"
+            welcome_text = "👋 Привет! Ты уже был у нас.\n\nВся информация для Заказа в шапке профиля в Телеграм канале\n\nВот полезные ссылки 👇"
 
         markup = types.InlineKeyboardMarkup(row_width=1)
         btn1 = types.InlineKeyboardButton("📢 Telegram канал", url="https://t.me/dealer_auto")
@@ -82,7 +82,7 @@ def start(message):
         bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
 
     else:
-        welcome_text ="👋 Привет! Это бот Dealer Auto."
+        welcome_text ="👋 Привет! Это бот Dealer Auto. Вся информация для Заказа в шапке профиля в Телеграм канале"
         markup = types.InlineKeyboardMarkup(row_width=1)
         btn1 = types.InlineKeyboardButton("📢 Telegram канал", url="https://t.me/dealer_auto")
         btn2 = types.InlineKeyboardButton("🚀 Канал в МАХ",
