@@ -69,9 +69,9 @@ def start(message):
         if is_new_instagram_user(user.id):
             save_instagram_user(user.id, user.username, user.first_name)
             notify_new_client(message)
-            welcome_text = "✅ Привет! Ты пришёл из Instagram.\n\nВся информация для Заказа в шапке профиля в наших каналфх\n\nВот полезные ссылки 👇"
+            welcome_text = "        ✅ Привет! Ты пришёл из Instagram.        \n\nВот полезные ссылки 👇"
         else:
-            welcome_text = "👋 Привет! Ты уже был у нас.\n\nВся информация для Заказа в шапке профиля в наших каналах\n\nВот полезные ссылки 👇"
+            welcome_text = "        👋 Привет! Ты уже был у нас.\n\n        Вот полезные ссылки 👇"
 
         markup = types.InlineKeyboardMarkup(row_width=1)
         btn1 = types.InlineKeyboardButton("📢 Telegram канал", url="https://t.me/dealer_auto")
@@ -83,14 +83,14 @@ def start(message):
         bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
 
     else:
-        welcome_text ="👋 Привет! Это бот Dealer Auto.\n\nВся информация для Заказа в шапке профиля в наших каналах"
+        welcome_text ="        👋 Привет! Это бот Dealer Auto.        "
         markup = types.InlineKeyboardMarkup(row_width=1)
         btn1 = types.InlineKeyboardButton("📢 Telegram канал", url="https://t.me/dealer_auto")
         btn2 = types.InlineKeyboardButton("🚀 Канал в МАХ",
                                           url="https://max.ru/join/zA6Fz1aond_GxUYLWJDjFGWLRz2H5l0PoES6koN6WnI")
         btn3 = types.InlineKeyboardButton("📸 Instagram",
                                           url="https://www.instagram.com/autodealer138?igsh=cnFwMW5zMWVnZGFw&utm_source=qr")
-        btn4 = types.InlineKeyboardButton("🔔 Заказать", url="https: // t.me / dealer_auto / 714")
+        btn4 = types.InlineKeyboardButton("🔔 Заказать", url="https://t.me/dealer_auto/714")
         markup.add(btn1, btn2, btn3, btn4)
 
         bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
