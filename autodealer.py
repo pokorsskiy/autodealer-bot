@@ -1,7 +1,7 @@
 import telebot
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import os
 import sqlite3
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from datetime import datetime
 
 TOKEN = '8474300409:AAHxtqti-SYLiJNwUoRPJzfYxBujQquaj3I'
@@ -36,16 +36,14 @@ def start(message):
 
     if is_instagram:
         user = message.from_user
-        notification = f"🔔 Новый клиент!\nЮзер: @{user.username or 'нет'}\nИмя: {user.first_name or ''}"
-        bot.send_message(MY_ID, notification)
+        bot.send_message(MY_ID, f"🔔 Новый клиент из Instagram!\nЮзер: @{user.username or 'нет'}\nИмя: {user.first_name or ''}")
 
     bot.send_message(message.chat.id, text, reply_markup=main_menu())
 
-@bot.message_handler(commands=['stats', 'db'])
-def admin(message):
-    if message.from_user.id != MY_ID:
-        return
-    bot.send_message(message.chat.id, "Бот работает. /stats и /db пока в разработке.")
+@bot.message_handler(commands=['stats'])
+def stats(message):
+    if message.from_user.id != MY_ID: return
+    bot.send_message(message.chat.id, "✅ Бот работает. Клиенты сохраняются.")
 
 init_db()
 print("✅ Бот успешно запущен на Railway!")
