@@ -1,6 +1,8 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from datetime import datetime
+import sqlite3
+import os
 
 # ←←← ВСТАВЬ СВОЙ ТОКЕН СЮДА ↓↓↓
 TOKEN = '8474300409:AAHxtqti-SYLiJNwUoRPJzfYxBujQquaj3I'
@@ -10,7 +12,61 @@ bot = telebot.TeleBot(TOKEN)
 # Твой ID для уведомлений
 MY_ID = 8797871373
 
-#dasdadak
+# Путь к базе данных
+DB_FILE = 'instagram_users.db'
+
+
+def init_db():
+    """Создаём таблицу, если её ещё нет"""
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS instagram_users (
+                    user_id INTEGER PRIMARY KEY,
+                    username TEXT,
+                    full_name TEXT,
+                    first_seen TEXT,
+                    last_seen TEXT,
+                    visit_count INTEGER DEFAULT 1
+                )''')
+    conn.commit()
+    conn.close()
+
+
+def register_instagram_user(user):
+    """Возвращает True — если пользователь новый (уведомление нужно)
+       False — если уже был (уведомление не шлём)"""
+    user_id = user.id
+    username = f"@{user.username}" if user.username else None
+    full_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
+    now = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+
+    # Проверяем, есть ли уже такой user_id
+    c.execute("SELECT visit_count FROM instagram_users WHERE user_id = ?", (user_id,))
+    result = c.fetchone()
+
+    if result is None:
+        # Новый пользователь
+        c.execute("""INSERT INTO instagram_users 
+                     (user_id, username, full_name, first_seen, last_seen, visit_count)
+                     VALUES (?, ?, ?, ?, ?, 1)""",
+                  (user_id, username, full_name, now, now))
+        conn.commit()
+        conn.close()
+        return True
+    else:
+        # Повторный заход — обновляем
+        new_count = result[0] + 1
+        c.execute("""UPDATE instagram_users 
+                     SET last_seen = ?, visit_count = ? 
+                     WHERE user_id = ?""", (now, new_count, user_id))
+        conn.commit()
+        conn.close()
+        return False
+
+
 def main_menu():
     markup = InlineKeyboardMarkup(row_width=1)
     btn1 = InlineKeyboardButton("📢 Группа в Telegram", url="https://t.me/dealer_auto")
@@ -29,22 +85,24 @@ def start(message):
     if is_from_instagram:
         welcome_text = "👋 Привет! Ты пришёл из Instagram.\n\nВот вся информация по авто из Китая, Японии и Кореи:"
 
-        # Автоматическое уведомление тебе
-        try:
-            user = message.from_user
-            username = f"@{user.username}" if user.username else "нет username"
-            full_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
+        # Регистрируем пользователя и решаем, нужно ли уведомление
+        if register_instagram_user(message.from_user):
+            try:
+                user = message.from_user
+                username = f"@{user.username}" if user.username else "нет username"
+                full_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
 
-            notification = f"""🔔 Новый клиент из Instagram ✅
+                notification = f"""🔔 НОВЫЙ клиент из Instagram ✅
 
 Юзер: {username}
 Имя: {full_name}
-Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}
+Время первого визита: {datetime.now().strftime('%d.%m.%Y %H:%M')}
+Повторных заходов: 1 (первый)
 Ссылка: https://t.me/{user.username if user.username else 'нет'}"""
 
-            bot.send_message(MY_ID, notification)
-        except:
-            pass  # если вдруг ошибка — не ломаем бота
+                bot.send_message(MY_ID, notification)
+            except:
+                pass
     else:
         welcome_text = "👋 Привет!\n\nВот вся информация по авто из Китая, Японии и Кореи:"
 
@@ -55,5 +113,8 @@ def start(message):
     )
 
 
+# Инициализация базы при старте бота
+init_db()
 print("✅ Бот запущен и работает 24/7...")
+print(f"📊 База данных Instagram-пользователей: {DB_FILE}")
 bot.infinity_polling()
