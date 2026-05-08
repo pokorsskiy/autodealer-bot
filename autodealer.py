@@ -82,7 +82,7 @@ def start(message):
         bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
 
     else:
-        bot.send_message(message.chat.id, "👋 Привет! Это бот Dealer Auto.")
+        welcome_text ="👋 Привет! Это бот Dealer Auto."
         markup = types.InlineKeyboardMarkup(row_width=1)
         btn1 = types.InlineKeyboardButton("📢 Telegram канал", url="https://t.me/dealer_auto")
         btn2 = types.InlineKeyboardButton("🚀 Канал в МАХ",
@@ -90,6 +90,8 @@ def start(message):
         btn3 = types.InlineKeyboardButton("📸 Instagram",
                                           url="https://www.instagram.com/autodealer138?igsh=cnFwMW5zMWVnZGFw&utm_source=qr")
         markup.add(btn1, btn2, btn3)
+
+        bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
 
 @bot.message_handler(commands=['db'])
 def send_db(message):
