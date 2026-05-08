@@ -10,7 +10,7 @@ bot = telebot.TeleBot(TOKEN)
 # Твой ID для уведомлений
 MY_ID = 8797871373
 
-
+#dasdada
 def main_menu():
     markup = InlineKeyboardMarkup(row_width=1)
     btn1 = InlineKeyboardButton("📢 Группа в Telegram", url="https://t.me/dealer_auto")
