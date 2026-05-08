@@ -34,6 +34,7 @@ def register_instagram_user(user):
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
         c.execute("SELECT user_id FROM instagram_users WHERE user_id = ?", (user_id,))
+
         if c.fetchone() is None:
             c.execute("INSERT INTO instagram_users (user_id, username, full_name) VALUES (?, ?, ?)",
                       (user_id, username, full_name))
@@ -41,59 +42,75 @@ def register_instagram_user(user):
             print(f"✅ Новый клиент сохранён: {user_id}")
             conn.close()
             return True
-        else:
-            conn.close()
-            return False
+        conn.close()
+        return False
     except Exception as e:
-        print(f"❌ Ошибка сохранения в базу: {e}")
+        print(f"❌ Ошибка базы: {e}")
         return False
 
 
 def main_menu():
     markup = InlineKeyboardMarkup(row_width=1)
     markup.add(InlineKeyboardButton("📢 Группа в Telegram", url="https://t.me/dealer_auto"))
-    markup.add(InlineKeyboardButton("✍️ Группа МАХ", url="https://max.ru/join/zA6Fz1aond_GxUYLWJDjFGWLRz2H5l0PoES6koN6WnI"))
+    markup.add(
+        InlineKeyboardButton("✍️ Группа МАХ", url="https://max.ru/join/zA6Fz1aond_GxUYLWJDjFGWLRz2H5l0PoES6koN6WnI"))
     markup.add(InlineKeyboardButton("📸 Наш Instagram", url="https://www.instagram.com/autodealer138"))
     return markup
 
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    try:
-        is_from_instagram = message.text and "INSTA" in message.text
+    is_from_instagram = message.text and "INSTA" in message.text
 
-        if is_from_instagram:
-            welcome_text = "👋 Привет! Ты пришёл из Instagram.\n\nВот вся информация по авто из Китая, Японии и Кореи:"
-            if register_instagram_user(message.from_user):
-                user = message.from_user
-                notification = f"""🔔 НОВЫЙ клиент из Instagram ✅
+    if is_from_instagram:
+        welcome_text = "👋 Привет! Ты пришёл из Instagram.\n\nВот вся информация по авто из Китая, Японии и Кореи:"
+        if register_instagram_user(message.from_user):
+            user = message.from_user
+            notification = f"""🔔 НОВЫЙ клиент из Instagram ✅
 Юзер: @{user.username or 'нет'}
 Имя: {user.first_name or ''} {user.last_name or ''}
 Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}"""
-                bot.send_message(MY_ID, notification)
-        else:
-            welcome_text = "👋 Привет!\n\nВот вся информация по авто из Китая, Японии и Кореи:"
+            bot.send_message(MY_ID, notification)
+    else:
+        welcome_text = "👋 Привет!\n\nВот вся информация по авто из Китая, Японии и Кореи:"
 
-        bot.send_message(message.chat.id, welcome_text, reply_markup=main_menu())
-    except Exception as e:
-        print(f"Ошибка в обработчике: {e}")
+    bot.send_message(message.chat.id, welcome_text, reply_markup=main_menu())
 
 
 @bot.message_handler(commands=['stats'])
 def stats(message):
     if message.from_user.id != MY_ID:
         return
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) FROM instagram_users")
+    total = c.fetchone()[0]
+    conn.close()
+    bot.send_message(message.chat.id, f"📊 Всего уникальных клиентов: {total}")
+
+
+@bot.message_handler(commands=['db'])
+def send_db_file(message):
+    if message.from_user.id != MY_ID:
+        bot.send_message(message.chat.id, "⛔ Доступ запрещён")
+        return
+
     try:
-        conn = sqlite3.connect(DB_FILE)
-        c = conn.cursor()
-        c.execute("SELECT COUNT(*) FROM instagram_users")
-        total = c.fetchone()[0]
-        conn.close()
-        bot.send_message(message.chat.id, f"📊 Всего уникальных клиентов: {total}")
-    except:
-        bot.send_message(message.chat.id, "База пока пуста")
+        if os.path.exists(DB_FILE):
+            with open(DB_FILE, 'rb') as db_file:
+                bot.send_document(
+                    message.chat.id,
+                    db_file,
+                    caption="📁 Вот актуальный файл базы данных\nОткрой его в DB Browser for SQLite или PyCharm",
+                    filename="instagram_users.db"
+                )
+            bot.send_message(message.chat.id, f"✅ Файл отправлен! Размер: {os.path.getsize(DB_FILE)} байт")
+        else:
+            bot.send_message(message.chat.id, "❌ Файл базы ещё не создан")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"❌ Ошибка отправки файла: {e}")
 
 
 init_db()
-print("✅ Бот запущен успешно")
+print("✅ Бот запущен успешно | Команда /db добавлена")
 bot.infinity_polling()
