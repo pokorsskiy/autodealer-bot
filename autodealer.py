@@ -83,7 +83,7 @@ def start(message):
         bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
 
     else:
-        welcome_text ="        👋 Привет! Это бот Dealer Auto.        "
+        welcome_text ="        👋 Привет! Это бот Dealer Auto.\n\n        Вот полезные ссылки 👇"
         markup = types.InlineKeyboardMarkup(row_width=1)
         btn1 = types.InlineKeyboardButton("📢 Telegram канал", url="https://t.me/dealer_auto")
         btn2 = types.InlineKeyboardButton("🚀 Канал в МАХ",
