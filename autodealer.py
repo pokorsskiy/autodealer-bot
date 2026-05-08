@@ -2,13 +2,14 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from datetime import datetime
 import sqlite3
+import os
 
 # ←←← ВСТАВЬ СВОЙ ТОКЕН СЮДА ↓↓↓
 TOKEN = '8474300409:AAHxtqti-SYLiJNwUoRPJzfYxBujQquaj3I'
 
 bot = telebot.TeleBot(TOKEN)
 
-# Твой ID для уведомлений
+# Твой ID для уведомлений и /stats
 MY_ID = 8797871373
 
 # Путь к базе на Railway Volume
@@ -16,52 +17,81 @@ DB_FILE = '/app/instagram_users.db'
 
 
 def init_db():
-    """Создаём таблицу, если её ещё нет"""
+    """Полная очистка + создание новой упрощённой таблицы"""
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS instagram_users (
+
+    # Удаляем старую таблицу (если есть)
+    c.execute("DROP TABLE IF EXISTS instagram_users")
+
+    # Создаём новую с 3 столбцами
+    c.execute('''CREATE TABLE instagram_users (
                     user_id INTEGER PRIMARY KEY,
                     username TEXT,
-                    full_name TEXT,
-                    first_seen TEXT,
-                    last_seen TEXT,
-                    visit_count INTEGER DEFAULT 1
+                    full_name TEXT
                 )''')
     conn.commit()
     conn.close()
+    print("🗑️ База данных полностью очищена и пересоздана")
 
 
 def register_instagram_user(user):
-    """Возвращает True — если новый (уведомление нужно)"""
+    """Возвращает True — если пользователь новый"""
     user_id = user.id
     username = f"@{user.username}" if user.username else None
     full_name = f"{user.first_name or ''} {user.last_name or ''}".strip()
-    now = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
 
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
 
-    c.execute("SELECT visit_count FROM instagram_users WHERE user_id = ?", (user_id,))
-    result = c.fetchone()
+    c.execute("SELECT user_id FROM instagram_users WHERE user_id = ?", (user_id,))
+    exists = c.fetchone() is not None
 
-    if result is None:
-        # Новый пользователь
+    if not exists:
         c.execute("""INSERT INTO instagram_users 
-                     (user_id, username, full_name, first_seen, last_seen, visit_count)
-                     VALUES (?, ?, ?, ?, ?, 1)""",
-                  (user_id, username, full_name, now, now))
+                     (user_id, username, full_name)
+                     VALUES (?, ?, ?)""",
+                  (user_id, username, full_name))
         conn.commit()
         conn.close()
         return True
     else:
-        # Повторный
-        new_count = result[0] + 1
         c.execute("""UPDATE instagram_users 
-                     SET last_seen = ?, visit_count = ? 
-                     WHERE user_id = ?""", (now, new_count, user_id))
+                     SET username = ?, full_name = ? 
+                     WHERE user_id = ?""", (username, full_name, user_id))
         conn.commit()
         conn.close()
         return False
+
+
+def get_stats():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+
+    c.execute("SELECT COUNT(*) FROM instagram_users")
+    total_users = c.fetchone()[0]
+
+    c.execute("""SELECT username, full_name 
+                 FROM instagram_users 
+                 ORDER BY user_id DESC LIMIT 10""")
+    recent = c.fetchall()
+
+    conn.close()
+
+    text = f"""📊 <b>Статистика Instagram-клиентов</b>
+
+Всего уникальных клиентов: <b>{total_users}</b>
+
+🔄 Последние 10 клиентов:
+"""
+    if recent:
+        for i, (username, name) in enumerate(recent, 1):
+            user = username or "без username"
+            text += f"{i}. {user} — {name or '—'}\n"
+    else:
+        text += "Пока нет клиентов\n"
+
+    return text
 
 
 def main_menu():
@@ -92,8 +122,7 @@ def start(message):
 
 Юзер: {username}
 Имя: {full_name}
-Время первого визита: {datetime.now().strftime('%d.%m.%Y %H:%M')}
-Повторных заходов: 1 (первый)
+Время: {datetime.now().strftime('%d.%m.%Y %H:%M')}
 Ссылка: https://t.me/{user.username if user.username else 'нет'}"""
 
                 bot.send_message(MY_ID, notification)
@@ -109,8 +138,20 @@ def start(message):
     )
 
 
-# Инициализация базы
+@bot.message_handler(commands=['stats'])
+def stats(message):
+    if message.from_user.id != MY_ID:
+        bot.send_message(message.chat.id, "⛔ У тебя нет доступа к статистике.")
+        return
+    try:
+        stat_text = get_stats()
+        bot.send_message(message.chat.id, stat_text, parse_mode='HTML')
+    except Exception as e:
+        bot.send_message(message.chat.id, f"Ошибка: {e}")
+
+
+# Инициализация (очистка + создание)
 init_db()
-print("✅ Бот запущен на Railway с Persistent Volume")
+print("✅ Бот запущен | База очищена (только 3 столбца)")
 print(f"📊 База данных: {DB_FILE}")
 bot.infinity_polling()
