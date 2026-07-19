@@ -1,1 +1,1 @@
-web: python autodealer.py
+worker: python autodealer.py
