@@ -1,11 +1,11 @@
 """
-Модуль конфигурации и автоматической загрузки переменных из файла .env
+Модуль конфигурации и загрузки переменных окружения с гарантированным фолбэком для Railway.
 """
 
 import os
 
 def load_dotenv_file(filepath: str = ".env"):
-    """Простой локальный парсер .env файла без сторонних библиотек"""
+    """Простой локальный парсер .env файла"""
     if not os.path.exists(filepath):
         return
     with open(filepath, "r", encoding="utf-8") as f:
@@ -19,28 +19,23 @@ def load_dotenv_file(filepath: str = ".env"):
             if key and key not in os.environ:
                 os.environ[key] = val
 
-# Загружаем .env при импорте модуля
+# Пробуем подгрузить .env при наличии
 load_dotenv_file()
 
-TOKEN = os.getenv('BOT_TOKEN')
-CHAT_ID_ENV = os.getenv('YOUR_CHAT_ID')
+# Резервные захардкоженные значения для гарантии работы на Railway
+DEFAULT_TOKEN = '8474300409:AAHxtqti-SYLiJNwUoRPJzfYxBujQquaj3I'
+DEFAULT_CHAT_ID = 8797871373
 
-if not TOKEN or TOKEN == "123456789:ABCdefGHIjklMNOpqrsTUVwxyZ":
-    print("⚠️ ПРЕДУПРЕЖДЕНИЕ: BOT_TOKEN не задан или содержит шаблонное значение в файле .env!")
+TOKEN = os.getenv('BOT_TOKEN') or DEFAULT_TOKEN
 
-YOUR_CHAT_ID = 0
-if CHAT_ID_ENV:
+chat_id_env = os.getenv('YOUR_CHAT_ID')
+if chat_id_env:
     try:
-        YOUR_CHAT_ID = int(CHAT_ID_ENV)
+        YOUR_CHAT_ID = int(chat_id_env)
     except ValueError:
-        print(f"⚠️ ПРЕДУПРЕЖДЕНИЕ: YOUR_CHAT_ID должен быть числом, получено: '{CHAT_ID_ENV}'")
+        YOUR_CHAT_ID = DEFAULT_CHAT_ID
 else:
-    print("⚠️ ПРЕДУПРЕЖДЕНИЕ: YOUR_CHAT_ID не задан в файле .env!")
+    YOUR_CHAT_ID = DEFAULT_CHAT_ID
 
-# Умный выбор пути к БД: если есть Linux Volume /data/ — используем его, иначе локальный файл
-if os.getenv('DB_NAME'):
-    DB_NAME = os.getenv('DB_NAME')
-elif os.path.exists('/data') and os.access('/data', os.W_OK):
-    DB_NAME = '/data/instagram_users.db'
-else:
-    DB_NAME = 'instagram_users.db'
+# Выбор пути БД: если задана переменная DB_NAME - берем ее, иначе локальный файл в директории бота
+DB_NAME = os.getenv('DB_NAME', 'instagram_users.db')
