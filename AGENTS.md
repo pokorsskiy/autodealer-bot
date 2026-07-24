@@ -9,9 +9,20 @@
 ## Структура проекта
 
 - `autodealer_bot/` — основной Telegram-бот Dealer Auto. Запуск: `python -m autodealer_bot.autodealer`.
-- `showcase_bot/` — независимый демонстрационный бот; не смешивать его модули с основным ботом.
+- `showcase_telegram_bot/` — демонстрационный бот, где сценарии работают внутри Telegram.
+- `showcase_webapp_bot/` — демонстрационный бот с интерфейсом Telegram Web App.
+- `showcase_hybrid_bot/` — комбинированный демонстрационный бот: Telegram + Web App.
+- Не смешивать модули основного бота и showcase-ботов между собой.
 - `check_project.py` — диагностика основного бота из корня репозитория.
 - `.env` и SQLite-файлы — локальные данные; не переносить, не раскрывать и не коммитить.
+
+## Локальный запуск
+
+- Основной бот: `python -m autodealer_bot.autodealer`.
+- Telegram showcase: `python showcase_telegram_bot/bot.py`.
+- Web App showcase: `python showcase_webapp_bot/bot.py`.
+- Hybrid showcase: `python showcase_hybrid_bot/bot.py`.
+- Web App-фронтенд находится в `showcase_webapp_bot/web/` и публикуется как статический сайт.
 
 ## Разработка Telegram-ботов
 
@@ -32,6 +43,7 @@
 
 - После изменения Python-кода запускать доступные проверки: синтаксис, целевой диагностический скрипт и/или тесты.
 - Перед запуском бота убедиться, что `BOT_TOKEN` и `YOUR_CHAT_ID` заданы в `.env` или окружении.
+- После изменения Web App проверять `index.html`, `style.css` и `app.js`; перед публикацией убеждаться, что сайт открывается по HTTPS.
 
 ## Git и безопасность
 
