@@ -5,8 +5,8 @@
 import sqlite3
 import os
 from datetime import datetime
-import config
-from logger import log_db, log_error
+from . import config
+from .logger import log_db, log_error
 
 def get_db_path() -> str:
     """Получение гарантированно доступного пути к БД"""

@@ -1,0 +1,15 @@
+:root { color-scheme: light; font-family: Arial, sans-serif; background: var(--tg-theme-bg-color, #f5f6f8); color: var(--tg-theme-text-color, #15171a); }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.container { max-width: 580px; margin: auto; padding: 24px 16px 36px; }
+.eyebrow { color: var(--tg-theme-button-color, #1677ff); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+h1 { margin: 4px 0 8px; font-size: 28px; }
+.subtitle { margin: 0 0 20px; color: var(--tg-theme-hint-color, #667085); }
+.cars { display: grid; gap: 8px; margin-bottom: 20px; }
+.cars button { border: 0; border-radius: 12px; padding: 14px; background: #fff; color: inherit; text-align: left; font-weight: 700; box-shadow: 0 1px 4px #00000012; }
+.cars span { display: block; margin-top: 4px; color: #667085; font-size: 13px; font-weight: 400; }
+form { display: grid; gap: 14px; }
+label { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+input, select, textarea { width: 100%; border: 1px solid #d0d5dd; border-radius: 10px; padding: 12px; font: inherit; background: #fff; }
+textarea { min-height: 82px; resize: vertical; }
+.submit { border: 0; border-radius: 10px; padding: 14px; background: var(--tg-theme-button-color, #1677ff); color: var(--tg-theme-button-text-color, #fff); font: inherit; font-weight: 700; }

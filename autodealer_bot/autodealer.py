@@ -6,10 +6,10 @@ import html
 from datetime import datetime
 import telebot
 
-from config import TOKEN, YOUR_CHAT_ID, DB_NAME
-from database import init_db, is_new_instagram_user, save_instagram_user
-from keyboards import get_main_keyboard
-from logger import log_msg, log_admin, log_error, log_system
+from .config import TOKEN, YOUR_CHAT_ID, DB_NAME
+from .database import init_db, is_new_instagram_user, save_instagram_user
+from .keyboards import get_main_keyboard
+from .logger import log_msg, log_admin, log_error, log_system
 
 bot = telebot.TeleBot(TOKEN)
 

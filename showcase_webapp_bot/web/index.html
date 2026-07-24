@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Подбор автомобиля</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <main class="container">
+    <p class="eyebrow">DEALER AUTO</p>
+    <h1>Подберём автомобиль</h1>
+    <p class="subtitle">Оставьте контакты — менеджер рассчитает предложение.</p>
+    <section class="cars" aria-label="Примеры автомобилей">
+      <button type="button" data-car="Toyota Camry">Toyota Camry <span>от 3,2 млн ₽</span></button>
+      <button type="button" data-car="BMW X5">BMW X5 <span>от 8,5 млн ₽</span></button>
+      <button type="button" data-car="Geely Monjaro">Geely Monjaro <span>от 4,1 млн ₽</span></button>
+    </section>
+    <form id="lead-form">
+      <label>Имя<input name="name" required maxlength="80" autocomplete="name"></label>
+      <label>Телефон<input name="phone" required maxlength="30" inputmode="tel" placeholder="+7 999 123-45-67"></label>
+      <label>Автомобиль<select name="car_interest" id="car-interest" required><option value="">Выберите вариант</option><option>Toyota Camry</option><option>BMW X5</option><option>Geely Monjaro</option><option>Нужен индивидуальный подбор</option></select></label>
+      <label>Способ покупки<select name="purchase_method" required><option value="">Выберите вариант</option><option>Наличные</option><option>Кредит</option><option>Трейд-ин</option><option>Нужна консультация</option></select></label>
+      <label>Комментарий<textarea name="comment" maxlength="500" placeholder="Пожелания по комплектации, бюджету и срокам"></textarea></label>
+      <button class="submit" type="submit">Отправить заявку</button>
+    </form>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

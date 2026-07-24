@@ -31,7 +31,7 @@ def check_python_syntax():
 def check_env_vars():
     print("\n🔍 [2/4] Проверка переменных окружения...")
     try:
-        from config import load_dotenv_file
+        from autodealer_bot.config import load_dotenv_file
         load_dotenv_file()
     except Exception:
         pass

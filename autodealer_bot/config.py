@@ -3,8 +3,11 @@
 """
 
 import os
+from pathlib import Path
 
-def load_dotenv_file(filepath: str = ".env"):
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+def load_dotenv_file(filepath: str = str(PROJECT_ROOT / ".env")):
     """Простой локальный парсер .env файла"""
     if not os.path.exists(filepath):
         return
