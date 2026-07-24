@@ -1,23 +1,42 @@
-AutoDealer Telegram Bot
+# Dealer Auto Bot
 
-Telegram-бот для автоматизации обработки трафика из социальных сетей и учета клиентов автомобильного дилера.
+Репозиторий содержит основной Telegram-бот для учёта переходов из Instagram и
+три самостоятельных демонстрационных сценария для автодилера.
 
-Основной функционал:
+## Состав проекта
 
-Отслеживание источников (Deep Linking): Бот определяет, откуда пришел пользователь (например, по ссылке из Instagram) и сегментирует аудиторию.
+- `autodealer_bot/` — основной бот: deep-link `?start=INSTA`, SQLite и команда `/db`.
+- `showcase_telegram_bot/` — каталог и заявка в Telegram.
+- `showcase_webapp_bot/` — каталог и заявка в Telegram Web App.
+- `showcase_hybrid_bot/` — быстрые действия в Telegram и каталог в Web App.
+- `showcase_telegram_bot/`, `showcase_webapp_bot/`, `showcase_hybrid_bot/` — независимые демонстрационные боты.
 
-Уведомления в реальном времени: Автоматически оповещает администратора о новых клиентах с указанием их профиля.
+## Установка
 
-Локальная база данных: Интеграция с SQLite для хранения истории заходов и данных пользователей.
+Нужен Python 3.10 или новее.
 
-Админ-панель: Возможность безопасного скачивания актуальной базы данных прямо через интерфейс бота.
+```powershell
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
 
-Стек технологий:
+## Настройка основного бота
 
-Python 3
+Создайте в корне файл `.env` и задайте:
 
-pyTelegramBotAPI (telebot)
+```env
+BOT_TOKEN=ваш_токен_из_BotFather
+YOUR_CHAT_ID=ваш_числовой_chat_id
+DB_NAME=data/instagram_users.db
+```
 
-SQLite 3
+Файл `.env` и SQLite-базы не попадают в Git. Не добавляйте токены в Python-код.
 
-Развернуто на платформе Railway (с подключением Persistent Volume для сохранения БД)
+## Запуск
+
+```powershell
+python -m autodealer_bot.autodealer
+```
+
+Для Railway используется команда из `Procfile`.

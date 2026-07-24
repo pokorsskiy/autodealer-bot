@@ -15,7 +15,7 @@ REQUIRED_FIELDS = ("name", "phone", "car_interest", "purchase_method")
 MAX_LENGTHS = {"name": 80, "phone": 30, "car_interest": 80, "purchase_method": 40, "comment": 500}
 
 if not TOKEN:
-    raise RuntimeError("Не задан BOT_TOKEN. Скопируйте .env.example в .env и укажите токен.")
+    raise RuntimeError("Не задан BOT_TOKEN. Укажите его в .env или переменных окружения.")
 
 bot = telebot.TeleBot(TOKEN)
 

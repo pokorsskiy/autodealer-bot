@@ -3,29 +3,140 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Подбор автомобиля</title>
+  <meta name="theme-color" content="#f7f1eb">
+  <title>Dealer Auto — подбор автомобиля</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-  <main class="container">
-    <p class="eyebrow">DEALER AUTO</p>
-    <h1>Подберём автомобиль</h1>
-    <p class="subtitle">Оставьте контакты — менеджер рассчитает предложение.</p>
-    <section class="cars" aria-label="Примеры автомобилей">
-      <button type="button" data-car="Toyota Camry">Toyota Camry <span>от 3,2 млн ₽</span></button>
-      <button type="button" data-car="BMW X5">BMW X5 <span>от 8,5 млн ₽</span></button>
-      <button type="button" data-car="Geely Monjaro">Geely Monjaro <span>от 4,1 млн ₽</span></button>
+  <main class="page">
+    <section class="hero">
+      <div class="hero__topline">
+        <a class="brand" href="#top" aria-label="Dealer Auto">
+          <span class="brand__mark">D</span>
+          <span>DEALER AUTO</span>
+        </a>
+        <span class="hero__label">Подбор · 2026</span>
+      </div>
+
+      <div class="hero__content" id="top">
+        <p class="kicker">Автомобиль под ваш ритм</p>
+        <h1>Выбирайте <em>спокойно.</em><br>Остальное — на нас.</h1>
+        <p class="hero__description">Подберём автомобиль, проверим историю и подготовим прозрачное предложение с учётом бюджета и способа покупки.</p>
+        <a class="hero__cta" href="#request">Получить предложение <span>↓</span></a>
+      </div>
+
+      <div class="hero__note">
+        <span class="hero__note-icon">✦</span>
+        <p>Персональный подбор<br>без навязчивых звонков</p>
+      </div>
+      <div class="orb orb--blue"></div>
+      <div class="orb orb--peach"></div>
     </section>
-    <form id="lead-form">
-      <label>Имя<input name="name" required maxlength="80" autocomplete="name"></label>
-      <label>Телефон<input name="phone" required maxlength="30" inputmode="tel" placeholder="+7 999 123-45-67"></label>
-      <label>Автомобиль<select name="car_interest" id="car-interest" required><option value="">Выберите вариант</option><option>Toyota Camry</option><option>BMW X5</option><option>Geely Monjaro</option><option>Нужен индивидуальный подбор</option></select></label>
-      <label>Способ покупки<select name="purchase_method" required><option value="">Выберите вариант</option><option>Наличные</option><option>Кредит</option><option>Трейд-ин</option><option>Нужна консультация</option></select></label>
-      <label>Комментарий<textarea name="comment" maxlength="500" placeholder="Пожелания по комплектации, бюджету и срокам"></textarea></label>
-      <button class="submit" type="submit">Отправить заявку</button>
-    </form>
+
+    <section class="benefits" aria-label="Преимущества">
+      <article class="benefit">
+        <span>01</span>
+        <h2>Сначала слушаем</h2>
+        <p>Фиксируем бюджет, ожидания и сценарий использования.</p>
+      </article>
+      <article class="benefit">
+        <span>02</span>
+        <h2>Проверяем детали</h2>
+        <p>Историю, документы, комплектацию и состояние автомобиля.</p>
+      </article>
+      <article class="benefit">
+        <span>03</span>
+        <h2>Сопровождаем сделку</h2>
+        <p>От первого расчёта до получения ключей.</p>
+      </article>
+    </section>
+
+    <section class="catalog" aria-labelledby="catalog-title">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">Каталог</p>
+          <h2 id="catalog-title">Несколько<br>хороших вариантов</h2>
+        </div>
+        <p>Нажмите на карточку, чтобы добавить автомобиль в заявку.</p>
+      </div>
+
+      <div class="car-list">
+        <button class="car-card car-card--sage" type="button" data-car="Toyota Camry" aria-pressed="false">
+          <span class="car-card__number">01</span>
+          <span class="car-card__visual car-card__visual--sedan" aria-hidden="true"><i></i></span>
+          <span class="car-card__title">Toyota<br>Camry</span>
+          <span class="car-card__meta">2024 · от 3,2 млн ₽</span>
+          <span class="car-card__arrow">↗</span>
+        </button>
+        <button class="car-card car-card--lavender" type="button" data-car="BMW X5" aria-pressed="false">
+          <span class="car-card__number">02</span>
+          <span class="car-card__visual car-card__visual--suv" aria-hidden="true"><i></i></span>
+          <span class="car-card__title">BMW<br>X5</span>
+          <span class="car-card__meta">2023 · от 8,5 млн ₽</span>
+          <span class="car-card__arrow">↗</span>
+        </button>
+        <button class="car-card car-card--sand" type="button" data-car="Geely Monjaro" aria-pressed="false">
+          <span class="car-card__number">03</span>
+          <span class="car-card__visual car-card__visual--suv" aria-hidden="true"><i></i></span>
+          <span class="car-card__title">Geely<br>Monjaro</span>
+          <span class="car-card__meta">2025 · от 4,1 млн ₽</span>
+          <span class="car-card__arrow">↗</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="request" id="request" aria-labelledby="request-title">
+      <div class="request__intro">
+        <p class="kicker">Ваше предложение</p>
+        <h2 id="request-title">Расскажите<br>о вашем выборе</h2>
+        <p>Оставьте контакты, и менеджер вернётся с вариантами, которые действительно подходят вам.</p>
+      </div>
+
+      <form class="lead-form" id="lead-form">
+        <label class="field">
+          <span>Как к вам обращаться</span>
+          <input name="name" required maxlength="80" autocomplete="name" placeholder="Ваше имя">
+        </label>
+        <label class="field">
+          <span>Номер телефона</span>
+          <input name="phone" required maxlength="30" inputmode="tel" autocomplete="tel" placeholder="+7 999 123-45-67">
+        </label>
+        <label class="field">
+          <span>Интересующий автомобиль</span>
+          <select name="car_interest" id="car-interest" required>
+            <option value="">Выберите вариант</option>
+            <option>Toyota Camry</option>
+            <option>BMW X5</option>
+            <option>Geely Monjaro</option>
+            <option>Нужен индивидуальный подбор</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Как планируете покупку</span>
+          <select name="purchase_method" required>
+            <option value="">Выберите вариант</option>
+            <option>Наличные</option>
+            <option>Кредит</option>
+            <option>Трейд-ин</option>
+            <option>Нужна консультация</option>
+          </select>
+        </label>
+        <label class="field field--full">
+          <span>Комментарий <small>необязательно</small></span>
+          <textarea name="comment" maxlength="500" placeholder="Например: нужен автомобиль до конца месяца, важен светлый салон"></textarea>
+        </label>
+        <button class="submit" type="submit"><span>Отправить заявку</span><i>↗</i></button>
+        <p class="form-note">Нажимая кнопку, вы соглашаетесь на обработку данных для связи по заявке.</p>
+      </form>
+    </section>
+
+    <footer>DEALER AUTO <span>·</span> ВАШ НАДЁЖНЫЙ МАРШРУТ К НОВОМУ АВТОМОБИЛЮ</footer>
   </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@ from keyboards import contact_keyboard, main_menu, webapp_keyboard
 from logger import logger, safe_handler
 
 if not TOKEN:
-    raise RuntimeError("Не задан BOT_TOKEN. Скопируйте .env.example в .env и укажите токен.")
+    raise RuntimeError("Не задан BOT_TOKEN. Укажите его в .env или переменных окружения.")
 
 bot = telebot.TeleBot(TOKEN)
 waiting_for_phone: set[int] = set()

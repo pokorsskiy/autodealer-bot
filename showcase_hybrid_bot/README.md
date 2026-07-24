@@ -1,12 +1,13 @@
-# Третий showcase: гибридный бот
+# Hybrid showcase
 
-Бот объединяет быстрые ответы и контактную заявку в Telegram с каталогом в Web App.
+Бот сочетает быстрые действия и сбор контакта в Telegram с каталогом в Web App.
 
-## Настройка
+Заполните в локальном `.env` значения `BOT_TOKEN`, `YOUR_CHAT_ID`, `WEB_APP_URL`
+и при необходимости `DB_NAME`. Для `WEB_APP_URL` используйте публичный HTTPS-адрес
+опубликованного Web App.
 
-1. Создайте отдельного бота через BotFather.
-2. Скопируйте `.env.example` в `.env` и заполните все значения.
-3. Укажите в `WEB_APP_URL` HTTPS-адрес Web App из `showcase_webapp_bot/web/`.
-4. Запустите: `python bot.py`.
+Запуск:
 
-Для трёх демонстраций нужны три разные пары `BOT_TOKEN` и `YOUR_CHAT_ID` (chat ID можно оставить одним и тем же).
+```powershell
+python bot.py
+```

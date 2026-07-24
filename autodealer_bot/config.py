@@ -1,6 +1,4 @@
-"""
-Модуль конфигурации и загрузки переменных окружения с гарантированным фолбэком для Railway.
-"""
+"""Конфигурация основного бота из переменных окружения."""
 
 import os
 from pathlib import Path
@@ -25,20 +23,17 @@ def load_dotenv_file(filepath: str = str(PROJECT_ROOT / ".env")):
 # Пробуем подгрузить .env при наличии
 load_dotenv_file()
 
-# Резервные захардкоженные значения для гарантии работы на Railway
-DEFAULT_TOKEN = '8474300409:AAHxtqti-SYLiJNwUoRPJzfYxBujQquaj3I'
-DEFAULT_CHAT_ID = 8797871373
+TOKEN = os.getenv("BOT_TOKEN")
 
-TOKEN = os.getenv('BOT_TOKEN') or DEFAULT_TOKEN
-
-chat_id_env = os.getenv('YOUR_CHAT_ID')
-if chat_id_env:
+_chat_id = os.getenv("YOUR_CHAT_ID")
+if _chat_id:
     try:
-        YOUR_CHAT_ID = int(chat_id_env)
+        YOUR_CHAT_ID = int(_chat_id)
     except ValueError:
-        YOUR_CHAT_ID = DEFAULT_CHAT_ID
+        YOUR_CHAT_ID = None
 else:
-    YOUR_CHAT_ID = DEFAULT_CHAT_ID
+    YOUR_CHAT_ID = None
 
-# Выбор пути БД: если задана переменная DB_NAME - берем ее, иначе локальный файл в директории бота
-DB_NAME = os.getenv('DB_NAME', 'instagram_users.db')
+# Выбор пути БД: если задана переменная DB_NAME — используем её,
+# иначе храним локальные данные в отдельной папке data/.
+DB_NAME = os.getenv("DB_NAME", str(PROJECT_ROOT / "data" / "instagram_users.db"))

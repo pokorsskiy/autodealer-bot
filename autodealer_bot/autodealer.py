@@ -11,6 +11,9 @@ from .database import init_db, is_new_instagram_user, save_instagram_user
 from .keyboards import get_main_keyboard
 from .logger import log_msg, log_admin, log_error, log_system
 
+if not TOKEN:
+    raise RuntimeError("Не задан BOT_TOKEN. Укажите его в .env или переменных окружения.")
+
 bot = telebot.TeleBot(TOKEN)
 
 
