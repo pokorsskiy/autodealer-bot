@@ -12,7 +12,7 @@ import json
 base_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, base_dir)
 
-from config import TOKEN, YOUR_CHAT_ID, DB_NAME
+from config import TOKEN, YOUR_CHAT_ID, DB_NAME, WEB_APP_URL
 from database import init_db
 
 
@@ -47,6 +47,12 @@ def check_env_vars():
         status = False
     else:
         print(f"  ✅ YOUR_CHAT_ID — обнаружен ({YOUR_CHAT_ID})")
+
+    if not WEB_APP_URL:
+        print("  ⚠️ WEB_APP_URL не задан! Web App не сможет открываться в боте.")
+        status = False
+    else:
+        print(f"  ✅ WEB_APP_URL — обнаружен ({WEB_APP_URL})")
 
     return status
 

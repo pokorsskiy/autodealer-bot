@@ -35,3 +35,6 @@ default_db_path = os.path.join(base_dir, 'showcase_leads.db')
 DB_NAME = local_env.get('DB_NAME') or default_db_path
 if not os.path.isabs(DB_NAME):
     DB_NAME = os.path.join(base_dir, DB_NAME)
+
+# Ссылка на Telegram Web App
+WEB_APP_URL = local_env.get('WEB_APP_URL') or os.getenv('WEB_APP_URL') or ""

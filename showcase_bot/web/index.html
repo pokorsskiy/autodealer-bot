@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AutoDealer - Презентация</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Подключаем Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Хедер приложения -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-accent">AutoDealer</span> Bot
+            </div>
+            <div class="status-badge">Demo App</div>
+        </header>
+
+        <!-- Основной контент (Вкладки) -->
+        <main class="app-content">
+            
+            <!-- ВКЛАДКА 1: О БОТЕ -->
+            <section id="tab-home" class="tab-panel active">
+                <div class="hero-section">
+                    <h1>Автоматизация автобизнеса под ключ</h1>
+                    <p class="hero-subtitle">Узнайте, как Telegram-бот собирает клиентов из Instagram, считает доставку и продает автомобили 24/7.</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Deep-linking & Трекинг</h3>
+                        <p>Бот определяет источники переходов (Insta, Avito, TG). Вы знаете, какая реклама сработала.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Сбор базы клиентов</h3>
+                        <p>Контакты автоматически заносятся в базу данных. Полный экспорт в Excel в 1 клик.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🧮</div>
+                        <h3>Умный калькулятор</h3>
+                        <p>Клиенты сами считают пошлины и доставку под ключ. Конверсия в заявку выше на 300%!</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Быстрые алерты</h3>
+                        <p>Мгновенные Telegram-уведомления менеджерам о новых лидах с их номерами телефонов.</p>
+                    </div>
+                </div>
+
+                <div class="action-banner">
+                    <h3>Готовы увеличить продажи?</h3>
+                    <p>Протестируйте каталог и калькулятор во вкладках меню ниже, выберите тариф и оставьте заявку!</p>
+                    <button class="btn btn-primary btn-pulse" onclick="switchTab('tariffs')">Посмотреть тарифы</button>
+                </div>
+            </section>
+
+            <!-- ВКЛАДКА 2: КАТАЛОГ -->
+            <section id="tab-catalog" class="tab-panel">
+                <div class="section-title">
+                    <h2>Тест-драйв каталога</h2>
+                    <p>Именно так ваши клиенты увидят ваши авто в наличии и под заказ</p>
+                </div>
+
+                <div class="catalog-grid">
+                    <!-- BMW X5 -->
+                    <div class="car-card">
+                        <div class="car-badge hot">Горячее</div>
+                        <div class="car-image-container">
+                            <div class="car-image-placeholder bmw"></div>
+                        </div>
+                        <div class="car-info">
+                            <h3 class="car-title">BMW X5 xDrive30d</h3>
+                            <div class="car-specs">
+                                <span>📅 2023 г.</span>
+                                <span>⚙️ 3.0 Дизель (286 л.с.)</span>
+                                <span>🛣️ 18,000 км</span>
+                            </div>
+                            <div class="car-footer">
+                                <span class="car-price">8 900 000 ₽</span>
+                                <button class="btn btn-sm btn-outline" onclick="selectCarForCalc('BMW X5', 55000, 'kr')">В калькулятор</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hyundai Palisade -->
+                    <div class="car-card">
+                        <div class="car-badge spec">Под заказ</div>
+                        <div class="car-image-container">
+                            <div class="car-image-placeholder palisade"></div>
+                        </div>
+                        <div class="car-info">
+                            <h3 class="car-title">Hyundai Palisade Calligraphy</h3>
+                            <div class="car-specs">
+                                <span>📅 2022 г.</span>
+                                <span>⚙️ 2.2 Дизель (202 л.с.)</span>
+                                <span>🛣️ 24,000 км</span>
+                            </div>
+                            <div class="car-footer">
+                                <span class="car-price">4 650 000 ₽</span>
+                                <button class="btn btn-sm btn-outline" onclick="selectCarForCalc('Hyundai Palisade', 32000, 'kr')">В калькулятор</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Geely Monjaro -->
+                    <div class="car-card">
+                        <div class="car-badge new">Хит продаж</div>
+                        <div class="car-image-container">
+                            <div class="car-image-placeholder monjaro"></div>
+                        </div>
+                        <div class="car-info">
+                            <h3 class="car-title">Geely Monjaro L</h3>
+                            <div class="car-specs">
+                                <span>📅 2024 г.</span>
+                                <span>⚙️ 2.0 Бензин (238 л.с.)</span>
+                                <span>🛣️ Новое</span>
+                            </div>
+                            <div class="car-footer">
+                                <span class="car-price">3 450 000 ₽</span>
+                                <button class="btn btn-sm btn-outline" onclick="selectCarForCalc('Geely Monjaro', 21000, 'cn')">В калькулятор</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ВКЛАДКА 3: КАЛЬКУЛЯТОР -->
+            <section id="tab-calculator" class="tab-panel">
+                <div class="section-title">
+                    <h2>Калькулятор привоза</h2>
+                    <p>Мгновенный расчет стоимости растаможки и доставки до РФ</p>
+                </div>
+
+                <div class="calc-box">
+                    <div class="form-group">
+                        <label for="calc-country">Страна отправления</label>
+                        <select id="calc-country" class="form-control" onchange="calculate()">
+                            <option value="kr">🇰🇷 Южная Корея (в USD)</option>
+                            <option value="cn">🇨🇳 Китай (в USD)</option>
+                            <option value="ae">🇦🇪 ОАЭ (в USD)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="calc-price-foreign">Цена автомобиля в валюте ($)</label>
+                        <input type="number" id="calc-price-foreign" class="form-control" value="25000" min="1000" oninput="calculate()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="calc-engine">Объем двигателя (куб. см)</label>
+                        <input type="number" id="calc-engine" class="form-control" value="2000" min="500" step="100" oninput="calculate()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="calc-type">Тип двигателя</label>
+                        <select id="calc-type" class="form-control" onchange="calculate()">
+                            <option value="petrol">Бензин / Дизель</option>
+                            <option value="electric">Электро / Гибрид</option>
+                        </select>
+                    </div>
+
+                    <div class="calc-results">
+                        <h3>Итого под ключ в РФ:</h3>
+                        <div class="total-price" id="total-price">0 ₽</div>
+                        
+                        <div class="price-breakdown">
+                            <div class="breakdown-item">
+                                <span>Стоимость авто ($):</span>
+                                <span id="val-car-usd">$0</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Стоимость авто (₽):</span>
+                                <span id="val-car-rub">0 ₽</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Доставка и логистика:</span>
+                                <span id="val-delivery">0 ₽</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Таможенная пошлина + Утиль:</span>
+                                <span id="val-duty">0 ₽</span>
+                            </div>
+                            <div class="breakdown-item">
+                                <span>Наша комиссия:</span>
+                                <span id="val-commission">0 ₽</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary w-100 mt-4" onclick="applyFromCalc()">Оформить заявку на этот расчет</button>
+                </div>
+            </section>
+
+            <!-- ВКЛАДКА 4: ТАРИФЫ -->
+            <section id="tab-tariffs" class="tab-panel">
+                <div class="section-title">
+                    <h2>Наши тарифы</h2>
+                    <p>Выберите подходящий пакет для автоматизации вашего автодилерского бизнеса</p>
+                </div>
+
+                <div class="tariffs-list">
+                    <!-- Тариф Старт -->
+                    <div class="tariff-card" id="tariff-card-start">
+                        <div class="tariff-header">
+                            <h3>«Старт»</h3>
+                            <div class="tariff-price">15 000 ₽</div>
+                        </div>
+                        <ul class="tariff-features">
+                            <li>✨ Бот под вашим брендом</li>
+                            <li>📊 Сбор базы клиентов</li>
+                            <li>🔔 Уведомления менеджерам</li>
+                            <li>🔗 Трекинг Instagram/Avito</li>
+                        </ul>
+                        <button class="btn btn-outline w-100" onclick="selectTariff('Старт (15 000 ₽)', 'tariff-card-start')">Выбрать этот тариф</button>
+                    </div>
+
+                    <!-- Тариф Профи -->
+                    <div class="tariff-card popular" id="tariff-card-pro">
+                        <div class="tariff-badge">Популярный</div>
+                        <div class="tariff-header">
+                            <h3>«Профи»</h3>
+                            <div class="tariff-price">25 000 ₽</div>
+                        </div>
+                        <ul class="tariff-features">
+                            <li>✨ Всё из тарифа «Старт»</li>
+                            <li>🧮 Интерактивный калькулятор</li>
+                            <li>🚗 Онлайн-каталог автомобилей</li>
+                            <li>🛠 Техподдержка 1 месяц</li>
+                        </ul>
+                        <button class="btn btn-primary w-100" onclick="selectTariff('Профи (25 000 ₽)', 'tariff-card-pro')">Выбрать этот тариф</button>
+                    </div>
+
+                    <!-- Тариф VIP -->
+                    <div class="tariff-card" id="tariff-card-vip">
+                        <div class="tariff-header">
+                            <h3>«VIP / Код»</h3>
+                            <div class="tariff-price">45 000 ₽</div>
+                        </div>
+                        <ul class="tariff-features">
+                            <li>🔑 Передача исходного кода (Python)</li>
+                            <li>🐳 Docker & развертывание</li>
+                            <li>🔧 Индивидуальные доработки</li>
+                            <li>📞 Прямой контакт с разработчиком</li>
+                        </ul>
+                        <button class="btn btn-outline w-100" onclick="selectTariff('VIP / Исходный код (45 000 ₽)', 'tariff-card-vip')">Выбрать этот тариф</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ВКЛАДКА 5: ЗАЯВКА -->
+            <section id="tab-lead" class="tab-panel">
+                <div class="section-title">
+                    <h2>Отправить заявку</h2>
+                    <p>Заполните форму, и мы свяжемся с вами для демонстрации и обсуждения условий</p>
+                </div>
+
+                <form id="lead-form" class="lead-form" onsubmit="submitForm(event)">
+                    <div class="form-group">
+                        <label for="lead-name">Ваше имя</label>
+                        <input type="text" id="lead-name" class="form-control" placeholder="Иван" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lead-phone">Номер телефона</label>
+                        <input type="tel" id="lead-phone" class="form-control" placeholder="+7 (999) 999-99-99" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lead-interest">Выбранный тариф / Интерес</label>
+                        <input type="text" id="lead-interest" class="form-control" placeholder="Например: Тариф Профи" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lead-notes">Комментарий к заявке</label>
+                        <textarea id="lead-notes" class="form-control" rows="3" placeholder="Расскажите о ваших пожеланиях к боту..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-4 btn-pulse-blue">Отправить заявку 🚀</button>
+                </form>
+            </section>
+
+        </main>
+
+        <!-- Фиксированная нижняя навигация -->
+        <nav class="app-nav">
+            <button class="nav-item active" onclick="switchTab('home')" id="nav-home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">О боте</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('catalog')" id="nav-catalog">
+                <span class="nav-icon">🚗</span>
+                <span class="nav-label">Каталог</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('calculator')" id="nav-calculator">
+                <span class="nav-icon">🧮</span>
+                <span class="nav-label">Калькулятор</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('tariffs')" id="nav-tariffs">
+                <span class="nav-icon">💎</span>
+                <span class="nav-label">Тарифы</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- Подключаем скрипт логики -->
+    <script src="app.js"></script>
+</body>
+</html>
