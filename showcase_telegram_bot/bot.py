@@ -12,7 +12,7 @@ from logger import logger, safe_handler
 
 
 if not TOKEN:
-    raise RuntimeError("Не задан BOT_TOKEN. Укажите его в .env или переменных окружения.")
+    raise RuntimeError("Не задан BOT_TOKEN. Скопируйте .env.example в .env и укажите токен.")
 
 bot = telebot.TeleBot(TOKEN)
 lead_drafts: dict[int, dict[str, str]] = {}

@@ -1,1 +1,1 @@
-worker: python -m autodealer_bot.autodealer
+worker: python -m showcase_bot.bot
