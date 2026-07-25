@@ -7,10 +7,15 @@ from .config import SHOWCASES, SUPPORT_URL
 
 def get_main_keyboard() -> types.InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup(row_width=1)
+    contacts_button = (
+        types.InlineKeyboardButton("📞 Контакты", url=SUPPORT_URL)
+        if SUPPORT_URL
+        else types.InlineKeyboardButton("📞 Контакты", callback_data="support")
+    )
     markup.add(
         types.InlineKeyboardButton("🤖 Примеры ботов", callback_data="catalog"),
         types.InlineKeyboardButton("🛠 Разработка под заказ", callback_data="lead:start"),
-        types.InlineKeyboardButton("📞 Поддержка", callback_data="support"),
+        contacts_button,
     )
     return markup
 
@@ -39,6 +44,12 @@ def get_showcase_keyboard(showcase: dict[str, str]) -> types.InlineKeyboardMarku
 def get_support_keyboard() -> types.InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup(row_width=1)
     if SUPPORT_URL:
-        markup.add(types.InlineKeyboardButton("Написать в поддержку", url=SUPPORT_URL))
+        markup.add(types.InlineKeyboardButton("Написать по вопросам/заказу", url=SUPPORT_URL))
+    markup.add(types.InlineKeyboardButton("← В меню", callback_data="menu"))
+    return markup
+
+
+def get_cancel_keyboard() -> types.InlineKeyboardMarkup:
+    markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton("← В меню", callback_data="menu"))
     return markup

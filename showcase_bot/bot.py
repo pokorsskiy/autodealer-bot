@@ -16,6 +16,7 @@ from showcase_bot.config import BOT_TOKEN, DB_NAME, SHOWCASES, SUPPORT_URL, YOUR
 from showcase_bot.database import init_db, save_lead
 from showcase_bot.keyboards import (
     get_catalog_keyboard,
+    get_cancel_keyboard,
     get_main_keyboard,
     get_showcase_keyboard,
     get_support_keyboard,
@@ -29,6 +30,10 @@ if not BOT_TOKEN:
 bot = telebot.TeleBot(BOT_TOKEN)
 awaiting_lead_from: set[int] = set()
 SHOWCASES_BY_KEY = {item["key"]: item for item in SHOWCASES}
+MAIN_MENU_TEXT = (
+    "<b>Autobot — боты для авто-бизнеса</b>\n\n"
+    "Покажу готовые решения и помогу собрать бота под вашу задачу."
+)
 
 
 def safe_handler(handler):
@@ -45,11 +50,33 @@ def safe_handler(handler):
 def send_main_menu(chat_id: int) -> None:
     bot.send_message(
         chat_id,
-        "<b>Dealer Auto — боты для авто-бизнеса</b>\n\n"
-        "Покажу готовые решения и помогу собрать бота под вашу задачу.",
+        MAIN_MENU_TEXT,
         parse_mode="HTML",
         reply_markup=get_main_keyboard(),
     )
+
+
+def edit_screen(
+    call: telebot.types.CallbackQuery,
+    text: str,
+    reply_markup: telebot.types.InlineKeyboardMarkup,
+    parse_mode: str | None = None,
+) -> None:
+    """Обновляет экран бота в текущем сообщении."""
+    try:
+        bot.edit_message_text(
+            text,
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            parse_mode=parse_mode,
+            reply_markup=reply_markup,
+        )
+    except ApiTelegramException as error:
+        description = (error.description or "").lower()
+        if error.error_code == 400 and "message is not modified" in description:
+            logger.debug("Экран уже открыт: chat_id=%s", call.message.chat.id)
+            return
+        raise
 
 
 @bot.message_handler(commands=["start", "menu"])
@@ -69,20 +96,19 @@ def handle_callback(call: telebot.types.CallbackQuery) -> None:
             logger.info("Устаревший callback %s: %s", call.id, error.description)
         else:
             logger.warning("Не удалось подтвердить callback %s: %s", call.id, error)
-    chat_id = call.message.chat.id
     data = call.data
 
     if data == "menu":
         awaiting_lead_from.discard(call.from_user.id)
-        send_main_menu(chat_id)
+        edit_screen(call, MAIN_MENU_TEXT, get_main_keyboard(), parse_mode="HTML")
         return
 
     if data == "catalog":
-        bot.send_message(
-            chat_id,
-            "<b>Примеры готовых ботов</b>\n\nВыберите сценарий, чтобы узнать подробности.",
+        edit_screen(
+            call,
+            "<b>Примеры готовых ботов</b>\n\nВыберите бота, чтобы узнать подробности.",
+            get_catalog_keyboard(),
             parse_mode="HTML",
-            reply_markup=get_catalog_keyboard(),
         )
         return
 
@@ -90,48 +116,38 @@ def handle_callback(call: telebot.types.CallbackQuery) -> None:
         showcase = SHOWCASES_BY_KEY.get(data.split(":", 1)[1])
         if showcase:
             url_note = "" if showcase["url"] else "\n\n<i>Ссылка будет добавлена после публикации примера.</i>"
-            bot.send_message(
-                chat_id,
+            edit_screen(
+                call,
                 f"<b>{html.escape(showcase['title'])}</b>\n\n"
                 f"{html.escape(showcase['description'])}{url_note}",
+                get_showcase_keyboard(showcase),
                 parse_mode="HTML",
-                reply_markup=get_showcase_keyboard(showcase),
             )
         return
 
     if data == "lead:start":
         awaiting_lead_from.add(call.from_user.id)
-        bot.send_message(
-            chat_id,
+        edit_screen(
+            call,
             "Опишите задачу: какой бот нужен, что должен уметь и для кого он будет работать.\n\n"
-            "Одним сообщением, до 2 000 символов. Для отмены — /cancel.",
+            "Одним сообщением, до 2 000 символов.",
+            get_cancel_keyboard(),
         )
+        return
+
+    if data == "lead:cancel":
+        awaiting_lead_from.discard(call.from_user.id)
+        edit_screen(call, "Заявка отменена.", get_main_keyboard())
         return
 
     if data == "support":
         text = (
-            "Поддержка доступна по кнопке ниже."
+            "Контакты доступны по кнопке ниже."
             if SUPPORT_URL
             else "Контакт поддержки пока не настроен. Оставьте заявку — мы свяжемся с вами."
         )
-        bot.send_message(chat_id, text, reply_markup=get_support_keyboard())
+        edit_screen(call, text, get_support_keyboard())
         return
-
-    if data == "contacts":
-        bot.send_message(
-            chat_id,
-            "<b>Контакты</b>\n\nНажмите «Поддержка» или оставьте заявку — ответим в Telegram.",
-            parse_mode="HTML",
-            reply_markup=get_main_keyboard(),
-        )
-
-
-@bot.message_handler(commands=["cancel"])
-@safe_handler
-def cancel_lead(message: telebot.types.Message) -> None:
-    awaiting_lead_from.discard(message.from_user.id)
-    bot.send_message(message.chat.id, "Заявка отменена.", reply_markup=get_main_keyboard())
-
 
 @bot.message_handler(content_types=["text"])
 @safe_handler
