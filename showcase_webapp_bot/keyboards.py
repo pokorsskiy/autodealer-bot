@@ -1,9 +1,14 @@
-"""Клавиатура открытия Web App."""
+"""Inline-клавиатура открытия Web App."""
 
 from telebot import types
 
 
-def webapp_keyboard(url: str) -> types.ReplyKeyboardMarkup:
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(types.KeyboardButton("🚗 Открыть каталог", web_app=types.WebAppInfo(url=url)))
+def webapp_keyboard(url: str) -> types.InlineKeyboardMarkup:
+    markup = types.InlineKeyboardMarkup()
+    markup.add(
+        types.InlineKeyboardButton(
+            "🚗 Открыть Web App",
+            web_app=types.WebAppInfo(url=url),
+        )
+    )
     return markup

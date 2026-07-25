@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f7f1eb">
-  <title>Dealer Auto — подбор автомобиля</title>
+  <title>Dealer Auto — каталог автомобилей</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -13,129 +13,284 @@
 </head>
 <body>
   <main class="page">
-    <section class="hero">
+    <section class="hero" id="top">
       <div class="hero__topline">
         <a class="brand" href="#top" aria-label="Dealer Auto">
           <span class="brand__mark">D</span>
           <span>DEALER AUTO</span>
         </a>
-        <span class="hero__label">Подбор · 2026</span>
+        <span class="hero__label">Каталог · 2026</span>
       </div>
 
-      <div class="hero__content" id="top">
+      <div class="hero__content">
         <p class="kicker">Автомобиль под ваш ритм</p>
-        <h1>Выбирайте <em>спокойно.</em><br>Остальное — на нас.</h1>
-        <p class="hero__description">Подберём автомобиль, проверим историю и подготовим прозрачное предложение с учётом бюджета и способа покупки.</p>
-        <a class="hero__cta" href="#request">Получить предложение <span>↓</span></a>
+        <h1>Выбирайте <em>спокойно.</em><br>Остальное — <span class="mobile-break">на нас.</span></h1>
+        <p class="hero__description">Изучите варианты, сохраните понравившиеся и отправьте заявку на конкретный автомобиль прямо внутри Telegram.</p>
+        <a class="hero__cta" href="#catalog">Открыть каталог <span>↓</span></a>
       </div>
 
       <div class="hero__note">
         <span class="hero__note-icon">✦</span>
-        <p>Персональный подбор<br>без навязчивых звонков</p>
+        <p>Демонстрационные данные<br>для знакомства с Web App</p>
       </div>
       <div class="orb orb--blue"></div>
       <div class="orb orb--peach"></div>
     </section>
 
+    <nav class="service-nav" aria-label="Разделы Web App">
+      <a href="#catalog">Каталог</a>
+      <a href="#calculator">Калькулятор</a>
+      <a href="#help">Помощь</a>
+      <a href="#info">FAQ</a>
+    </nav>
+
     <section class="benefits" aria-label="Преимущества">
       <article class="benefit">
         <span>01</span>
-        <h2>Сначала слушаем</h2>
-        <p>Фиксируем бюджет, ожидания и сценарий использования.</p>
+        <h2>Выберите вариант</h2>
+        <p>Поиск, фильтры и подробные характеристики.</p>
       </article>
       <article class="benefit">
         <span>02</span>
-        <h2>Проверяем детали</h2>
-        <p>Историю, документы, комплектацию и состояние автомобиля.</p>
+        <h2>Сохраните лучшее</h2>
+        <p>Избранное работает до закрытия приложения.</p>
       </article>
       <article class="benefit">
         <span>03</span>
-        <h2>Сопровождаем сделку</h2>
-        <p>От первого расчёта до получения ключей.</p>
+        <h2>Получите предложение</h2>
+        <p>Заявка сразу поступит менеджеру.</p>
       </article>
     </section>
 
-    <section class="catalog" aria-labelledby="catalog-title">
+    <section class="catalog" id="catalog" aria-labelledby="catalog-title">
       <div class="section-heading">
         <div>
           <p class="kicker">Каталог</p>
-          <h2 id="catalog-title">Несколько<br>хороших вариантов</h2>
+          <h2 id="catalog-title">Подходящие<br>автомобили</h2>
         </div>
-        <p>Нажмите на карточку, чтобы добавить автомобиль в заявку.</p>
+        <p>Фотографии, цены и характеристики используются для демонстрации интерфейса.</p>
       </div>
 
-      <div class="car-list">
-        <button class="car-card car-card--sage" type="button" data-car="Toyota Camry" aria-pressed="false">
-          <span class="car-card__number">01</span>
-          <span class="car-card__visual car-card__visual--sedan" aria-hidden="true"><i></i></span>
-          <span class="car-card__title">Toyota<br>Camry</span>
-          <span class="car-card__meta">2024 · от 3,2 млн ₽</span>
-          <span class="car-card__arrow">↗</span>
-        </button>
-        <button class="car-card car-card--lavender" type="button" data-car="BMW X5" aria-pressed="false">
-          <span class="car-card__number">02</span>
-          <span class="car-card__visual car-card__visual--suv" aria-hidden="true"><i></i></span>
-          <span class="car-card__title">BMW<br>X5</span>
-          <span class="car-card__meta">2023 · от 8,5 млн ₽</span>
-          <span class="car-card__arrow">↗</span>
-        </button>
-        <button class="car-card car-card--sand" type="button" data-car="Geely Monjaro" aria-pressed="false">
-          <span class="car-card__number">03</span>
-          <span class="car-card__visual car-card__visual--suv" aria-hidden="true"><i></i></span>
-          <span class="car-card__title">Geely<br>Monjaro</span>
-          <span class="car-card__meta">2025 · от 4,1 млн ₽</span>
-          <span class="car-card__arrow">↗</span>
-        </button>
+      <div class="catalog-tools">
+        <label class="search">
+          <span class="sr-only">Поиск по каталогу</span>
+          <input id="search" type="search" placeholder="Марка или модель" autocomplete="off">
+          <i>⌕</i>
+        </label>
+
+        <details class="filters" id="filters">
+          <summary>Фильтры <span id="active-filter-count">0</span></summary>
+          <div class="filters__grid">
+            <label class="field">
+              <span>Марка</span>
+              <select id="brand-filter"><option value="">Все марки</option></select>
+            </label>
+            <label class="field">
+              <span>Цена до</span>
+              <select id="price-filter">
+                <option value="">Любая</option>
+                <option value="4000000">4 млн ₽</option>
+                <option value="6000000">6 млн ₽</option>
+                <option value="9000000">9 млн ₽</option>
+                <option value="12000000">12 млн ₽</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Год от</span>
+              <select id="year-filter">
+                <option value="">Любой</option>
+                <option value="2022">2022</option>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Пробег до</span>
+              <select id="mileage-filter">
+                <option value="">Любой</option>
+                <option value="10000">10 000 км</option>
+                <option value="30000">30 000 км</option>
+                <option value="60000">60 000 км</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Кузов</span>
+              <select id="body-filter">
+                <option value="">Любой</option>
+                <option value="Седан">Седан</option>
+                <option value="Кроссовер">Кроссовер</option>
+                <option value="Внедорожник">Внедорожник</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Привод</span>
+              <select id="drive-filter">
+                <option value="">Любой</option>
+                <option value="Передний">Передний</option>
+                <option value="Полный">Полный</option>
+              </select>
+            </label>
+          </div>
+          <button class="text-button" id="reset-filters" type="button">Сбросить фильтры</button>
+        </details>
+
+        <div class="catalog-actions">
+          <label class="sort-control">
+            <span>Сортировка</span>
+            <select id="sort">
+              <option value="default">По умолчанию</option>
+              <option value="price-asc">Цена: сначала ниже</option>
+              <option value="price-desc">Цена: сначала выше</option>
+              <option value="year-desc">Год: сначала новые</option>
+              <option value="year-asc">Год: сначала старые</option>
+            </select>
+          </label>
+          <button class="favorite-filter" id="favorite-filter" type="button" aria-pressed="false">♡ Избранное</button>
+        </div>
+      </div>
+
+      <div class="catalog-status">
+        <span id="result-count">0 автомобилей</span>
+        <span id="favorite-count">0 в избранном</span>
+      </div>
+      <div class="car-list" id="car-list" aria-live="polite"></div>
+      <div class="empty-state" id="empty-state" hidden>
+        <span>⌕</span>
+        <h3>Ничего не найдено</h3>
+        <p>Попробуйте изменить запрос или сбросить фильтры.</p>
+        <button class="secondary-button" type="button" data-reset-filters>Сбросить</button>
       </div>
     </section>
 
-    <section class="request" id="request" aria-labelledby="request-title">
-      <div class="request__intro">
-        <p class="kicker">Ваше предложение</p>
-        <h2 id="request-title">Расскажите<br>о вашем выборе</h2>
-        <p>Оставьте контакты, и менеджер вернётся с вариантами, которые действительно подходят вам.</p>
+    <section class="calculator" id="calculator" aria-labelledby="calculator-title">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">Предварительный расчёт</p>
+          <h2 id="calculator-title">Оцените<br>бюджет</h2>
+        </div>
+        <p>Расчёт ориентировочный и требует уточнения у менеджера.</p>
+      </div>
+      <form class="calculator-form" id="calculator-form">
+        <label class="field field--full">
+          <span>Стоимость автомобиля, ₽</span>
+          <input name="price" type="number" min="50000" max="50000000" step="10000" value="3500000" required>
+        </label>
+        <label class="field">
+          <span>Возраст</span>
+          <select name="age" required>
+            <option value="under_3">До 3 лет</option>
+            <option value="3_to_5">От 3 до 5 лет</option>
+            <option value="over_5">Старше 5 лет</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Двигатель, л</span>
+          <input name="engine" type="number" min="0.5" max="10" step="0.1" value="2.0" required>
+        </label>
+        <button class="submit" type="submit"><span>Рассчитать</span><i>→</i></button>
+      </form>
+      <div class="calculation-result" id="calculation-result" hidden></div>
+    </section>
+
+    <section class="help" id="help" aria-labelledby="help-title">
+      <div>
+        <p class="kicker">Персональный подбор</p>
+        <h2 id="help-title">Не знаете,<br>что выбрать?</h2>
+        <p>Опишите задачу — менеджер предложит несколько подходящих вариантов.</p>
+      </div>
+      <button class="hero__cta button-reset" type="button" data-open-manager>Менеджер подскажет <span>↗</span></button>
+    </section>
+
+    <section class="info" id="info" aria-labelledby="info-title">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">Полезное</p>
+          <h2 id="info-title">Всё важное<br>в одном месте</h2>
+        </div>
       </div>
 
-      <form class="lead-form" id="lead-form">
-        <label class="field">
-          <span>Как к вам обращаться</span>
-          <input name="name" required maxlength="80" autocomplete="name" placeholder="Ваше имя">
-        </label>
-        <label class="field">
-          <span>Номер телефона</span>
-          <input name="phone" required maxlength="30" inputmode="tel" autocomplete="tel" placeholder="+7 999 123-45-67">
-        </label>
-        <label class="field">
-          <span>Интересующий автомобиль</span>
-          <select name="car_interest" id="car-interest" required>
-            <option value="">Выберите вариант</option>
-            <option>Toyota Camry</option>
-            <option>BMW X5</option>
-            <option>Geely Monjaro</option>
-            <option>Нужен индивидуальный подбор</option>
-          </select>
-        </label>
-        <label class="field">
-          <span>Как планируете покупку</span>
-          <select name="purchase_method" required>
-            <option value="">Выберите вариант</option>
-            <option>Наличные</option>
-            <option>Кредит</option>
-            <option>Трейд-ин</option>
-            <option>Нужна консультация</option>
-          </select>
-        </label>
-        <label class="field field--full">
-          <span>Комментарий <small>необязательно</small></span>
-          <textarea name="comment" maxlength="500" placeholder="Например: нужен автомобиль до конца месяца, важен светлый салон"></textarea>
-        </label>
-        <button class="submit" type="submit"><span>Отправить заявку</span><i>↗</i></button>
-        <p class="form-note">Нажимая кнопку, вы соглашаетесь на обработку данных для связи по заявке.</p>
-      </form>
+      <div class="info-grid">
+        <article class="info-card">
+          <span>FAQ</span>
+          <details>
+            <summary>Как проходит покупка?</summary>
+            <p>Уточняем задачу, подбираем варианты, согласовываем смету и сопровождаем сделку.</p>
+          </details>
+          <details>
+            <summary>Сколько занимает доставка?</summary>
+            <p>Срок зависит от страны и маршрута. Точный прогноз формируется после выбора автомобиля.</p>
+          </details>
+          <details>
+            <summary>Что входит в расчёт?</summary>
+            <p>Автомобиль, ориентировочная пошлина, доставка и дополнительные расходы.</p>
+          </details>
+        </article>
+        <button class="info-link" type="button" data-placeholder="Группа отзывов будет добавлена позже.">
+          <span>⭐</span><b>Отзывы</b><small>Будут добавлены позже</small>
+        </button>
+        <button class="info-link" type="button" data-placeholder="Общий чат будет добавлен позже.">
+          <span>💬</span><b>Общий чат</b><small>Будет добавлен позже</small>
+        </button>
+        <button class="info-link" type="button" data-placeholder="Ссылки на социальные сети будут добавлены позже.">
+          <span>🌐</span><b>Соцсети</b><small>Будут добавлены позже</small>
+        </button>
+      </div>
     </section>
 
     <footer>DEALER AUTO <span>·</span> ВАШ НАДЁЖНЫЙ МАРШРУТ К НОВОМУ АВТОМОБИЛЮ</footer>
   </main>
+
+  <dialog class="car-dialog" id="car-dialog" aria-labelledby="car-dialog-title">
+    <button class="dialog-close" type="button" data-close-dialog aria-label="Закрыть">×</button>
+    <div id="car-dialog-content"></div>
+  </dialog>
+
+  <dialog class="lead-dialog" id="lead-dialog" aria-labelledby="lead-dialog-title">
+    <button class="dialog-close" type="button" data-close-lead aria-label="Закрыть">×</button>
+    <div class="request__intro">
+      <p class="kicker" id="lead-kicker">Заявка</p>
+      <h2 id="lead-dialog-title">Получить<br>предложение</h2>
+      <p id="lead-description">Оставьте контакты, и менеджер свяжется с вами.</p>
+    </div>
+    <form class="lead-form" id="lead-form">
+      <input type="hidden" name="lead_type" value="car">
+      <input type="hidden" name="car_id">
+      <label class="field">
+        <span>Как к вам обращаться</span>
+        <input name="name" required maxlength="80" autocomplete="name" placeholder="Ваше имя">
+      </label>
+      <label class="field">
+        <span>Номер телефона</span>
+        <input name="phone" required maxlength="30" inputmode="tel" autocomplete="tel" placeholder="+7 999 123-45-67">
+      </label>
+      <label class="field field--full">
+        <span>Telegram username <small>необязательно</small></span>
+        <input name="username" maxlength="64" autocomplete="username" placeholder="@username">
+      </label>
+      <label class="field">
+        <span>Автомобиль</span>
+        <input name="car_interest" id="car-interest" required maxlength="80" readonly>
+      </label>
+      <label class="field">
+        <span>Способ покупки</span>
+        <select name="purchase_method" required>
+          <option value="">Выберите вариант</option>
+          <option>Наличные</option>
+          <option>Кредит</option>
+          <option>Трейд-ин</option>
+          <option>Нужна консультация</option>
+        </select>
+      </label>
+      <label class="field field--full">
+        <span>Комментарий <small>необязательно</small></span>
+        <textarea name="comment" maxlength="500" placeholder="Ваши пожелания по автомобилю"></textarea>
+      </label>
+      <button class="submit" type="submit"><span>Отправить заявку</span><i>↗</i></button>
+      <p class="form-note">Нажимая кнопку, вы соглашаетесь на обработку данных для связи по заявке.</p>
+    </form>
+  </dialog>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
 </body>
