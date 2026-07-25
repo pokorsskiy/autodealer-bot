@@ -1,8 +1,6 @@
 """Логирование и безопасное уведомление администратора об ошибках."""
 
-import html
 import logging
-import traceback
 from functools import wraps
 
 from telebot.apihelper import ApiTelegramException
@@ -25,7 +23,6 @@ def safe_handler(bot):
             try:
                 return handler(message, *args, **kwargs)
             except Exception:
-                error_details = traceback.format_exc()
                 logger.exception("Ошибка в обработчике %s", handler.__name__)
                 chat = getattr(message, "chat", None)
                 if chat is None and getattr(message, "message", None) is not None:
@@ -36,12 +33,11 @@ def safe_handler(bot):
                 except ApiTelegramException:
                     logger.warning("Не удалось сообщить пользователю об ошибке")
 
-                if YOUR_CHAT_ID:
-                    safe_error = html.escape(error_details[-1500:])
+                if YOUR_CHAT_ID and (chat is None or chat.id != YOUR_CHAT_ID):
                     try:
                         bot.send_message(
                             YOUR_CHAT_ID,
-                            f"⚠️ <b>Ошибка в {handler.__name__}</b>\n<pre>{safe_error}</pre>",
+                            "⚠️ В боте произошла ошибка. Подробности сохранены в локальном логе.",
                             parse_mode="HTML",
                         )
                     except ApiTelegramException:

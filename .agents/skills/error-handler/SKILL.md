@@ -28,8 +28,6 @@ except ApiTelegramException as error:
 Использовать единый контракт `safe_handler(bot)` для message- и callback-хэндлеров:
 
 ```python
-import html
-import traceback
 from functools import wraps
 
 from telebot.apihelper import ApiTelegramException
@@ -42,7 +40,6 @@ def safe_handler(bot):
             try:
                 return handler(event, *args, **kwargs)
             except Exception:
-                error_text = traceback.format_exc()
                 logger.exception("Ошибка в обработчике %s", handler.__name__)
                 message = getattr(event, "message", event)
                 try:
@@ -53,8 +50,7 @@ def safe_handler(bot):
                     try:
                         bot.send_message(
                             YOUR_CHAT_ID,
-                            f"⚠️ <b>Ошибка в {html.escape(handler.__name__)}</b>\n"
-                            f"<pre>{html.escape(error_text[-1500:])}</pre>",
+                            "⚠️ В боте произошла ошибка. Подробности сохранены в локальном логе.",
                             parse_mode="HTML",
                         )
                     except ApiTelegramException:
@@ -63,7 +59,7 @@ def safe_handler(bot):
     return decorator
 ```
 
-Перед отправкой ошибки администратору экранировать HTML через `html.escape` и ограничивать размер сообщения.
+Никогда не отправлять traceback, пути к файлам, токены, содержимое `.env` или детали Telegram API в чат — даже администратору. Такие сведения остаются только в локальном логе. Если администратор и пользователь совпадают, не дублировать уведомление.
 
 ## 3. Обязательные правила
 
@@ -72,4 +68,6 @@ def safe_handler(bot):
 - Не скрывать ошибки базы данных и конфигурации без записи в лог.
 - Для callback-событий получать чат через `event.message.chat`.
 - После ошибки отправлять пользователю короткое безопасное сообщение.
+- Не выводить пользователю и администратору текст исключения или traceback; логировать его только через `logger.exception`.
+- Не вызывать `edit_message_text` для сообщений с reply-клавиатурой. Если клавиатуру нужно убрать, сначала отправить отдельное сообщение с `ReplyKeyboardRemove`, затем создать новое inline-сообщение.
 - Для временных сетевых ошибок применять ограниченный retry только там, где это действительно нужно.

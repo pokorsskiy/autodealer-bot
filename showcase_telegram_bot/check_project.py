@@ -1,14 +1,22 @@
-"""Локальная диагностика первого демонстрационного Telegram-бота."""
+"""Локальная диагностика демонстрационного Telegram-бота."""
 
 import ast
 import os
-import sqlite3
 
-from config import DB_NAME, TOKEN, YOUR_CHAT_ID
-from database import init_db
+from calculator import AGE_3_TO_5, AGE_OVER_5, AGE_UNDER_3, calculate_duty_eur
+from config import MANAGER_URL, TOKEN
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+REQUIRED_FILES = (
+    "bot.py",
+    "calculator.py",
+    "config.py",
+    "keyboards.py",
+    "logger.py",
+    "test_bot.py",
+    ".env.example",
+)
 
 
 def check_syntax() -> bool:
@@ -26,11 +34,32 @@ def check_syntax() -> bool:
     return valid
 
 
+def check_files() -> bool:
+    missing = [name for name in REQUIRED_FILES if not os.path.isfile(os.path.join(BASE_DIR, name))]
+    if missing:
+        print(f"❌ Не найдены файлы: {', '.join(missing)}")
+        return False
+    return True
+
+
+def check_calculator() -> bool:
+    checks = (
+        calculate_duty_eur(10_000, AGE_UNDER_3, 1_500) == 5_250,
+        calculate_duty_eur(20_000, AGE_3_TO_5, 2_000) == 5_400,
+        calculate_duty_eur(20_000, AGE_OVER_5, 1_600) == 5_600,
+    )
+    return all(checks)
+
+
 if __name__ == "__main__":
-    print("🔍 Синтаксис:", "OK" if check_syntax() else "ошибка")
+    results = {
+        "Файлы": check_files(),
+        "Синтаксис": check_syntax(),
+        "Калькулятор": check_calculator(),
+    }
+    for name, valid in results.items():
+        print(f"🔍 {name}:", "OK" if valid else "ошибка")
     print("🔍 BOT_TOKEN:", "настроен" if TOKEN else "не задан")
-    print("🔍 YOUR_CHAT_ID:", "настроен" if YOUR_CHAT_ID else "не задан")
-    init_db()
-    with sqlite3.connect(DB_NAME) as connection:
-        connection.execute("SELECT 1 FROM leads LIMIT 1")
-    print("🔍 SQLite:", "OK")
+    print("🔍 MANAGER_URL:", "настроен" if MANAGER_URL else "используется заглушка")
+    if not all(results.values()):
+        raise SystemExit(1)

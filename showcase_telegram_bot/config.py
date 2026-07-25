@@ -33,3 +33,46 @@ except ValueError:
 DB_NAME = LOCAL_ENV.get("DB_NAME") or os.getenv("SHOWCASE_TELEGRAM_DB_NAME") or "showcase_telegram_leads.db"
 if not os.path.isabs(DB_NAME):
     DB_NAME = os.path.join(BASE_DIR, DB_NAME)
+
+
+def _get_value(name: str, default: str = "") -> str:
+    return LOCAL_ENV.get(name) or os.getenv(f"SHOWCASE_TELEGRAM_{name}") or default
+
+
+def _get_positive_float(name: str, default: float) -> float:
+    try:
+        value = float(_get_value(name, str(default)).replace(",", "."))
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
+def _get_non_negative_int(name: str, default: int) -> int:
+    try:
+        value = int(_get_value(name, str(default)))
+    except ValueError:
+        return default
+    return value if value >= 0 else default
+
+
+def _telegram_url(name: str) -> str:
+    value = _get_value(name).strip()
+    if value.startswith("@"):
+        return f"https://t.me/{value[1:]}"
+    if value.startswith(("t.me/", "telegram.me/")):
+        return f"https://{value}"
+    if value.startswith("https://"):
+        return value
+    return ""
+
+
+MANAGER_URL = _telegram_url("MANAGER_URL")
+REVIEWS_URL = _telegram_url("REVIEWS_URL")
+COMMUNITY_URL = _telegram_url("COMMUNITY_URL")
+TELEGRAM_CHANNEL_URL = _telegram_url("TELEGRAM_CHANNEL_URL")
+VK_URL = _get_value("VK_URL") if _get_value("VK_URL").startswith("https://") else ""
+YOUTUBE_URL = _get_value("YOUTUBE_URL") if _get_value("YOUTUBE_URL").startswith("https://") else ""
+
+EUR_RUB_RATE = _get_positive_float("EUR_RUB_RATE", 100.0)
+DELIVERY_COST_RUB = _get_non_negative_int("DELIVERY_COST_RUB", 350_000)
+OTHER_COSTS_RUB = _get_non_negative_int("OTHER_COSTS_RUB", 100_000)
