@@ -18,15 +18,32 @@ def _url_or_stub(text: str, url: str, key: str) -> types.InlineKeyboardButton:
     return types.InlineKeyboardButton(text, callback_data=f"stub:{key}")
 
 
+def _manager_button(text: str) -> types.InlineKeyboardButton:
+    if MANAGER_URL:
+        return types.InlineKeyboardButton(text, url=MANAGER_URL)
+    return types.InlineKeyboardButton(text, callback_data="manager")
+
+
 def main_menu() -> types.InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(
         types.InlineKeyboardButton("🧮 Калькулятор", callback_data="calculator"),
-        _url_or_stub("📞 Связаться", MANAGER_URL, "manager"),
-        types.InlineKeyboardButton("⭐ Отзывы", callback_data="reviews"),
-        types.InlineKeyboardButton("💬 Общий чат", callback_data="community"),
+        types.InlineKeyboardButton("📞 Связаться", callback_data="manager"),
+        (
+            types.InlineKeyboardButton("⭐ Отзывы", url=REVIEWS_URL)
+            if REVIEWS_URL
+            else types.InlineKeyboardButton("⭐ Отзывы", callback_data="reviews")
+        ),
+        (
+            types.InlineKeyboardButton("💬 Общий чат", url=COMMUNITY_URL)
+            if COMMUNITY_URL
+            else types.InlineKeyboardButton("💬 Общий чат", callback_data="community")
+        ),
         types.InlineKeyboardButton("❓ Популярные вопросы", callback_data="faq"),
-        types.InlineKeyboardButton("🌐 Другие соцсети", callback_data="socials"),
+        types.InlineKeyboardButton("🌐 Наши соцсети", callback_data="socials"),
+    )
+    markup.add(
+        types.InlineKeyboardButton("🟠 Заказать автомобиль", callback_data="order")
     )
     return markup
 
@@ -39,7 +56,19 @@ def back_to_menu() -> types.InlineKeyboardMarkup:
 
 def calculator_cancel() -> types.InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("Отменить расчёт", callback_data="menu"))
+    markup.add(types.InlineKeyboardButton("Отменить расчёт", callback_data="calc:cancel"))
+    return markup
+
+
+def order_cancel() -> types.InlineKeyboardMarkup:
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("Отменить заявку", callback_data="order:cancel"))
+    return markup
+
+
+def order_confirmation_menu() -> types.InlineKeyboardMarkup:
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("В меню", callback_data="order:menu"))
     return markup
 
 
@@ -57,7 +86,7 @@ def age_menu() -> types.InlineKeyboardMarkup:
 def result_menu() -> types.InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
-        _url_or_stub("📞 Уточнить расчёт у менеджера", MANAGER_URL, "manager"),
+        _manager_button("📞 Уточнить расчёт у менеджера"),
         types.InlineKeyboardButton("🧮 Новый расчёт", callback_data="calculator"),
         types.InlineKeyboardButton("← Назад в меню", callback_data="menu"),
     )
