@@ -60,6 +60,12 @@ class TelegramShowcaseFlowTest(unittest.TestCase):
         commands = set_commands.call_args.args[0]
         self.assertEqual([(command.command, command.description) for command in commands], [("start", "Запустить бота")])
 
+    def test_calculator_parses_rubles_and_liters(self) -> None:
+        self.assertEqual(bot_module._parse_rub_price("2 500 000 ₽"), 2_500_000)
+        self.assertEqual(bot_module._parse_rub_price("2\xa0500\xa0000 руб."), 2_500_000)
+        self.assertEqual(bot_module._parse_engine_liters("1,6 л"), 1.6)
+        self.assertEqual(bot_module._parse_engine_liters("2.0 литра"), 2.0)
+
     def test_calculator_flow(self) -> None:
         with (
             patch.object(bot_module.bot, "answer_callback_query"),
@@ -86,18 +92,18 @@ class TelegramShowcaseFlowTest(unittest.TestCase):
             bot_module.handle_callback(callback("calculator"))
             self.assertEqual(bot_module.calculator_sessions[101]["step"], "price")
 
-            bot_module.handle_text(text_message("18000"))
+            bot_module.handle_text(text_message("2 500 000 ₽"))
             self.assertEqual(bot_module.calculator_sessions[101]["step"], "age")
 
             bot_module.handle_callback(callback("calc:age:3_to_5"))
             self.assertEqual(bot_module.calculator_sessions[101]["step"], "engine")
 
-            bot_module.handle_text(text_message("1998"))
+            bot_module.handle_text(text_message("2,0 л"))
 
         self.assertNotIn(101, bot_module.calculator_sessions)
         final_text = edit_message.call_args.args[0]
         self.assertIn("Итого ориентировочно", final_text)
-        self.assertIn("1998 см³", final_text)
+        self.assertIn("2.0 л (2 000 см³)", final_text)
         manager_button = edit_message.call_args.kwargs["reply_markup"].keyboard[0][0]
         self.assertTrue(manager_button.url or manager_button.callback_data == "stub:manager")
 

@@ -98,3 +98,25 @@ def calculate_total(
         other_costs_rub=other_costs_rub,
         total_rub=car_price_rub + duty_rub + delivery_rub + other_costs_rub,
     )
+
+
+def calculate_total_from_rub(
+    car_price_rub: int,
+    age: str,
+    engine_cc: int,
+    eur_rub_rate: float,
+    delivery_rub: int,
+    other_costs_rub: int,
+) -> Calculation:
+    """Рассчитывает итог при вводе стоимости автомобиля в рублях."""
+    if eur_rub_rate <= 0:
+        raise ValueError("Курс евро должен быть больше нуля")
+
+    return calculate_total(
+        car_price_eur=car_price_rub / eur_rub_rate,
+        age=age,
+        engine_cc=engine_cc,
+        eur_rub_rate=eur_rub_rate,
+        delivery_rub=delivery_rub,
+        other_costs_rub=other_costs_rub,
+    )

@@ -7,7 +7,7 @@ import telebot
 from telebot import types
 from telebot.apihelper import ApiTelegramException
 
-from calculator import AGE_LABELS, calculate_total
+from calculator import AGE_LABELS, calculate_total_from_rub
 from config import (
     DELIVERY_COST_RUB,
     EUR_RUB_RATE,
@@ -83,6 +83,10 @@ def _format_rub(value: int) -> str:
     return f"{value:,}".replace(",", " ")
 
 
+def _format_eur(value: float) -> str:
+    return f"{value:,.0f}".replace(",", " ")
+
+
 def _answer_callback(call: types.CallbackQuery, text: str | None = None) -> None:
     try:
         bot.answer_callback_query(call.id, text=text)
@@ -143,6 +147,33 @@ def _parse_number(value: str) -> float | None:
         return float(normalized)
     except ValueError:
         return None
+
+
+def _parse_rub_price(value: str) -> int | None:
+    normalized = (
+        value.lower()
+        .replace("₽", "")
+        .replace("руб.", "")
+        .replace("руб", "")
+        .replace("\xa0", "")
+        .replace(" ", "")
+    )
+    if not normalized.isdigit():
+        return None
+    return int(normalized)
+
+
+def _parse_engine_liters(value: str) -> float | None:
+    normalized = (
+        value.lower()
+        .replace("литров", "")
+        .replace("литра", "")
+        .replace("литр", "")
+        .replace("л.", "")
+        .replace("л", "")
+        .strip()
+    )
+    return _parse_number(normalized)
 
 
 def _send_main_menu(chat_id: int, first_name: str | None = None) -> None:
@@ -208,7 +239,8 @@ def handle_callback(call: types.CallbackQuery) -> None:
         _edit_callback_screen(
             call,
             "🧮 <b>Предварительный расчёт</b>\n\n"
-            "Шаг 1 из 3. Введите стоимость автомобиля в евро, например: <code>18000</code>.",
+            "Шаг 1 из 3. Введите стоимость автомобиля в рублях, например: "
+            "<code>2 500 000</code> или <code>2 500 000 ₽</code>.",
             calculator_cancel(),
         )
         return
@@ -230,7 +262,8 @@ def handle_callback(call: types.CallbackQuery) -> None:
         _edit_callback_screen(
             call,
             "🧮 <b>Предварительный расчёт</b>\n\n"
-            "Шаг 3 из 3. Введите объём двигателя в см³, например: <code>1998</code>.",
+            "Шаг 3 из 3. Введите объём двигателя в литрах, например: "
+            "<code>2.0</code> или <code>1,6 л</code>.",
             calculator_cancel(),
         )
         return
@@ -283,15 +316,16 @@ def handle_text(message: types.Message) -> None:
         _send_main_menu(message.chat.id, message.from_user.first_name)
         return
 
-    value = _parse_number(message.text or "")
     if session.get("step") == "price":
-        if value is None or not 500 <= value <= 500_000:
+        price_rub = _parse_rub_price(message.text or "")
+        if price_rub is None or not 50_000 <= price_rub <= 50_000_000:
             bot.send_message(
                 message.chat.id,
-                "Введите стоимость от 500 до 500 000 евро одним числом.",
+                "Введите стоимость от 50 000 до 50 000 000 ₽, например: <code>2 500 000</code>.",
+                parse_mode="HTML",
             )
             return
-        session["car_price_eur"] = value
+        session["car_price_rub"] = price_rub
         session["step"] = "age"
         _edit_calculator_screen(
             message,
@@ -303,17 +337,19 @@ def handle_text(message: types.Message) -> None:
         return
 
     if session.get("step") == "engine":
-        if value is None or not 500 <= value <= 10_000 or not value.is_integer():
+        engine_liters = _parse_engine_liters(message.text or "")
+        if engine_liters is None or not 0.5 <= engine_liters <= 10:
             bot.send_message(
                 message.chat.id,
-                "Введите целый объём двигателя от 500 до 10 000 см³.",
+                "Введите объём двигателя от 0.5 до 10 л, например: <code>2.0</code> или <code>1,6 л</code>.",
+                parse_mode="HTML",
             )
             return
 
-        engine_cc = int(value)
+        engine_cc = round(engine_liters * 1000)
         age = str(session["age"])
-        calculation = calculate_total(
-            car_price_eur=float(session["car_price_eur"]),
+        calculation = calculate_total_from_rub(
+            car_price_rub=int(session["car_price_rub"]),
             age=age,
             engine_cc=engine_cc,
             eur_rub_rate=EUR_RUB_RATE,
@@ -323,12 +359,13 @@ def handle_text(message: types.Message) -> None:
         result_text = (
             "🧮 <b>Ориентировочный расчёт</b>\n\n"
             f"🚘 Стоимость автомобиля: <b>{_format_rub(calculation.car_price_rub)} ₽</b>\n"
+            f"💱 Для расчёта: <b>{_format_eur(calculation.car_price_eur)} €</b>\n"
             f"🛃 Таможенная пошлина: <b>{_format_rub(calculation.duty_rub)} ₽</b>\n"
             f"🚚 Доставка: <b>{_format_rub(calculation.delivery_rub)} ₽</b>\n"
             f"📄 Прочие расходы: <b>{_format_rub(calculation.other_costs_rub)} ₽</b>\n\n"
             f"Итого ориентировочно: <b>{_format_rub(calculation.total_rub)} ₽</b>\n\n"
             f"<i>Курс расчёта: 1 € = {EUR_RUB_RATE:g} ₽. "
-            f"Возраст: {AGE_LABELS[age]}, двигатель: {engine_cc} см³. "
+            f"Возраст: {AGE_LABELS[age]}, двигатель: {engine_liters:.1f} л ({_format_rub(engine_cc)} см³). "
             "Расчёт предварительный: итог зависит от курса, характеристик автомобиля, "
             "утилизационного сбора и расходов на оформление.</i>"
         )
