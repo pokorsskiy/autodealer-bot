@@ -1,8 +1,6 @@
-"""Логирование ошибок гибридного showcase-бота."""
+"""Безопасное логирование ошибок гибридного showcase-бота."""
 
-import html
 import logging
-import traceback
 from functools import wraps
 
 from telebot.apihelper import ApiTelegramException
@@ -20,17 +18,21 @@ def safe_handler(bot):
             try:
                 return handler(event, *args, **kwargs)
             except Exception:
-                details = traceback.format_exc()
-                logger.exception("Ошибка в %s", handler.__name__)
+                logger.exception("Ошибка в обработчике %s", handler.__name__)
                 message = getattr(event, "message", event)
-                try:
-                    bot.send_message(message.chat.id, "❌ Временная ошибка. Попробуйте ещё раз.")
-                except ApiTelegramException:
-                    pass
-                if YOUR_CHAT_ID:
+                chat_id = getattr(getattr(message, "chat", None), "id", None)
+                if chat_id is not None:
                     try:
-                        bot.send_message(YOUR_CHAT_ID, f"⚠️ <b>Hybrid ошибка</b>\n<pre>{html.escape(details[-1200:])}</pre>", parse_mode="HTML")
+                        bot.send_message(chat_id, "❌ Временная ошибка. Попробуйте ещё раз.")
                     except ApiTelegramException:
-                        pass
+                        logger.exception("Не удалось уведомить пользователя")
+                if YOUR_CHAT_ID and YOUR_CHAT_ID != chat_id:
+                    try:
+                        bot.send_message(
+                            YOUR_CHAT_ID,
+                            "⚠️ В Hybrid-боте произошла ошибка. Подробности сохранены в локальном логе.",
+                        )
+                    except ApiTelegramException:
+                        logger.exception("Не удалось уведомить администратора")
         return wrapper
     return decorator
