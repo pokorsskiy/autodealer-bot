@@ -4,7 +4,9 @@
 # Исключаем локальные базы данных SQLite
 *.db
 *.db.bak
+*.db.bak.*
 *.sqlite3
+showcase_webapp_bot/uploads/
 
 # Виртуальное окружение Python и кэш
 .venv/
