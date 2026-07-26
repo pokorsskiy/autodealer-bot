@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css?v=20260726-2">
+  <link rel="stylesheet" href="/style.css?v=20260726-3">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
@@ -25,7 +25,7 @@
       <div class="hero__copy">
         <p class="eyebrow">Автомобили без лишних ожиданий</p>
         <h1>Ваш следующий автомобиль уже ближе</h1>
-        <p>Выберите машину в городе или вариант с ускоренной доставкой из порта.</p>
+        <p>Выберите машину в городе, вариант из порта или рассчитайте привоз под заказ.</p>
       </div>
 
       <div class="hero-car" aria-hidden="true">
@@ -42,6 +42,11 @@
         <button type="button" data-location-jump="port">
           <span class="location-cards__icon location-cards__icon--port">↗</span>
           <span><b>В порту</b><small>Ускоренная доставка</small></span>
+          <i>→</i>
+        </button>
+        <button class="location-cards__order" type="button" data-calculator-jump>
+          <span class="location-cards__icon location-cards__icon--order">+</span>
+          <span><b>Под заказ</b><small>Рассчитать стоимость привоза</small></span>
           <i>→</i>
         </button>
       </div>
@@ -117,14 +122,26 @@
 
     <section class="calculator" id="calculator">
       <header class="section-head">
-        <div><p class="eyebrow">Калькулятор</p><h2>Оцените бюджет</h2></div>
+        <div><p class="eyebrow">Калькулятор</p><h2>Рассчитайте стоимость</h2></div>
       </header>
       <form id="calculator-form">
-        <label><span>Стоимость автомобиля, ₽</span><input name="price" type="number" min="50000" max="50000000" step="10000" value="3500000" required></label>
+        <fieldset class="calculator-mode">
+          <legend>Вы знаете стоимость автомобиля за границей?</legend>
+          <div>
+            <label><input type="radio" name="price_mode" value="known" checked><span>Да, знаю</span></label>
+            <label><input type="radio" name="price_mode" value="budget"><span>Нет, укажу ориентир</span></label>
+          </div>
+        </fieldset>
+        <label class="calculator-price">
+          <span id="calculator-price-label">Стоимость автомобиля за границей, ₽</span>
+          <input name="price" type="number" min="50000" max="50000000" step="10000" value="3500000" inputmode="numeric" required>
+          <small id="calculator-price-hint">Введите известную стоимость автомобиля без доставки и оформления.</small>
+        </label>
         <label><span>Возраст</span><select name="age" required><option value="under_3">До 3 лет</option><option value="3_to_5">От 3 до 5 лет</option><option value="over_5">Старше 5 лет</option></select></label>
         <label><span>Двигатель, л</span><input name="engine" type="number" min=".5" max="10" step=".1" value="2.0" required></label>
         <button class="primary-button" type="submit">Рассчитать <span>→</span></button>
       </form>
+      <button class="calculator-order-button" type="button" data-open-order>Сделать заказ <span>→</span></button>
       <div class="calculation-result" id="calculation-result" hidden></div>
     </section>
 
@@ -182,6 +199,6 @@
   </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="/app.js?v=20260726-2"></script>
+  <script src="/app.js?v=20260726-3"></script>
 </body>
 </html>

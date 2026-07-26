@@ -46,6 +46,8 @@ const elements = {
   leadTitle: document.querySelector("#lead-dialog-title"),
   leadDescription: document.querySelector("#lead-description"),
   calculatorForm: document.querySelector("#calculator-form"),
+  calculatorPriceLabel: document.querySelector("#calculator-price-label"),
+  calculatorPriceHint: document.querySelector("#calculator-price-hint"),
   calculationResult: document.querySelector("#calculation-result"),
   toast: document.querySelector("#toast"),
 };
@@ -311,7 +313,8 @@ function fillTelegramUser() {
   elements.leadForm.elements.username.value = user.username ? `@${user.username}` : "";
 }
 
-function openLead(type, car = null) {
+function openLead(type, car = null, context = "") {
+  const isOrder = context === "order";
   if (elements.carDialog.open) elements.carDialog.close();
   elements.leadForm.reset();
   fillTelegramUser();
@@ -323,12 +326,20 @@ function openLead(type, car = null) {
     ? "Например: семейный кроссовер до 5 млн ₽"
     : "Комплектация, цвет и другие пожелания";
   comment.closest("label").querySelector("small").textContent = type === "manager" ? "обязательно" : "необязательно";
-  elements.carInterest.value = car ? `${car.brand} ${car.model} (${car.year})` : "Нужна помощь с выбором";
-  elements.leadKicker.textContent = type === "car" ? locationLabel(car.location) : "Персональный подбор";
-  elements.leadTitle.textContent = type === "car" ? "Обсудить автомобиль" : "Подобрать автомобиль";
+  elements.carInterest.value = car
+    ? `${car.brand} ${car.model} (${car.year})`
+    : isOrder ? "Автомобиль под заказ" : "Нужна помощь с выбором";
+  elements.leadKicker.textContent = type === "car"
+    ? locationLabel(car.location)
+    : isOrder ? "Автомобиль под заказ" : "Персональный подбор";
+  elements.leadTitle.textContent = type === "car"
+    ? "Обсудить автомобиль"
+    : isOrder ? "Сделать заказ" : "Подобрать автомобиль";
   elements.leadDescription.textContent = type === "car"
     ? `${car.brand} ${car.model} уже добавлен в заявку. Оставьте контакты.`
-    : "Опишите задачу — менеджер предложит подходящие варианты.";
+    : isOrder
+      ? "Оставьте контакты и опишите, какой автомобиль вам нужен."
+      : "Опишите задачу — менеджер предложит подходящие варианты.";
   elements.leadDialog.showModal();
 }
 
@@ -358,18 +369,34 @@ function calculateDutyEur(priceEur, age, engineCc) {
   return engineCc * engineRate(engineCc, [[1000, 3], [1500, 3.2], [1800, 3.5], [2300, 4.8], [3000, 5], [10000, 5.7]]);
 }
 
+function updateCalculatorMode() {
+  const mode = elements.calculatorForm.elements.price_mode.value;
+  const isBudget = mode === "budget";
+  elements.calculatorPriceLabel.textContent = isBudget
+    ? "На какую стоимость автомобиля вы ориентируетесь, ₽"
+    : "Стоимость автомобиля за границей, ₽";
+  elements.calculatorPriceHint.textContent = isBudget
+    ? "Укажите примерную сумму покупки автомобиля за границей. Доставку и оформление рассчитаем отдельно."
+    : "Введите известную стоимость автомобиля без доставки и оформления.";
+  elements.calculationResult.hidden = true;
+}
+
+elements.calculatorForm.querySelectorAll("[name='price_mode']")
+  .forEach((field) => field.addEventListener("change", updateCalculatorMode));
+
 elements.calculatorForm.addEventListener("submit", (event) => {
   event.preventDefault();
   if (!elements.calculatorForm.reportValidity()) return;
   const values = Object.fromEntries(new FormData(elements.calculatorForm));
   const priceRub = Number(values.price);
+  const isBudget = values.price_mode === "budget";
   const eurRate = 100;
   const dutyRub = calculateDutyEur(priceRub / eurRate, values.age, Math.round(Number(values.engine) * 1000)) * eurRate;
   const total = priceRub + dutyRub + 450_000;
   elements.calculationResult.innerHTML = `
     <h3>${formatRub(total)}</h3>
-    <dl><dt>Автомобиль</dt><dd>${formatRub(priceRub)}</dd><dt>Таможенная пошлина</dt><dd>${formatRub(dutyRub)}</dd><dt>Доставка и расходы</dt><dd>${formatRub(450_000)}</dd></dl>
-    <p>Предварительный расчёт по условному курсу 1 € = ${eurRate} ₽. Точную стоимость уточнит менеджер.</p>
+    <dl><dt>${isBudget ? "Ориентир на автомобиль" : "Автомобиль"}</dt><dd>${formatRub(priceRub)}</dd><dt>Таможенная пошлина</dt><dd>${formatRub(dutyRub)}</dd><dt>Доставка и расходы</dt><dd>${formatRub(450_000)}</dd></dl>
+    <p>${isBudget ? "Расчёт выполнен по указанной ориентировочной стоимости. " : ""}Предварительный расчёт по условному курсу 1 € = ${eurRate} ₽. Точную стоимость уточнит менеджер.</p>
   `;
   elements.calculationResult.hidden = false;
 });
@@ -415,6 +442,9 @@ document.querySelectorAll("[data-location-jump]").forEach((button) => button.add
   document.querySelector("#catalog").scrollIntoView({ behavior: "smooth" });
   render();
 }));
+document.querySelector("[data-calculator-jump]").addEventListener("click", () => {
+  document.querySelector("#calculator").scrollIntoView({ behavior: "smooth" });
+});
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => {
   state.view = button.dataset.view;
   sessionStorage.setItem("dealer-auto-view", state.view);
@@ -428,6 +458,7 @@ document.querySelectorAll("[data-close-favorites]").forEach((button) => {
   button.addEventListener("click", () => elements.favoritesDialog.close());
 });
 document.querySelector("[data-open-manager]").addEventListener("click", () => openLead("manager"));
+document.querySelector("[data-open-order]").addEventListener("click", () => openLead("manager", null, "order"));
 document.querySelectorAll("[data-placeholder]").forEach((button) => {
   button.addEventListener("click", () => showToast(button.dataset.placeholder));
 });
