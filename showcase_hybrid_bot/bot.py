@@ -9,11 +9,13 @@ import telebot
 from telebot import types
 from telebot.apihelper import ApiTelegramException
 
-from calculator import AGE_LABELS, calculate_total_from_rub
+from calculator import (
+    AGE_LABELS,
+    WEBAPP_DELIVERY_AND_EXPENSES_RUB,
+    WEBAPP_EUR_RUB_RATE,
+    calculate_total_from_rub,
+)
 from config import (
-    DELIVERY_COST_RUB,
-    EUR_RUB_RATE,
-    OTHER_COSTS_RUB,
     TOKEN,
     WEB_APP_URL,
     YOUR_CHAT_ID,
@@ -23,12 +25,13 @@ from keyboards import (
     age_menu,
     back_to_menu,
     calculator_cancel,
-    contact_keyboard,
+    calculator_mode_menu,
     faq_answer_menu,
     faq_menu,
     main_menu,
     result_menu,
     socials_menu,
+    webapp_keyboard,
 )
 from logger import logger, safe_handler
 
@@ -82,6 +85,7 @@ STUB_LABELS = {
     "telegram_channel": "Ссылка на Telegram-канал",
     "vk": "Ссылка на ВКонтакте",
     "youtube": "Ссылка на YouTube",
+    "manager": "Ссылка на менеджера",
 }
 
 if not TOKEN:
@@ -89,24 +93,21 @@ if not TOKEN:
 
 bot = telebot.TeleBot(TOKEN)
 calculator_sessions: dict[int, dict[str, object]] = {}
-waiting_for_phone: set[int] = set()
+CALCULATOR_TITLE = "<b>РАСЧЁТ СТОИМОСТИ</b>\n<i>Предварительно · без обязательств</i>"
 
 
 def _main_text(first_name: str | None = None) -> str:
     name = f", {html.escape(first_name)}" if first_name else ""
     return (
-        f"👋 <b>Добро пожаловать{name}!</b>\n\n"
-        "В чате можно быстро рассчитать стоимость и связаться с менеджером. "
-        "Каталог автомобилей и подробная заявка доступны в Web App."
+        f"<b>DEALER AUTO{name}</b>\n"
+        "<i>Автомобили из-за рубежа — без лишнего шума</i>\n\n"
+        "Выберите автомобиль в каталоге или получите предварительный расчёт. "
+        "Когда будете готовы — менеджер поможет с деталями сделки."
     )
 
 
 def _format_rub(value: int) -> str:
     return f"{value:,}".replace(",", " ")
-
-
-def _format_eur(value: float) -> str:
-    return f"{value:,.0f}".replace(",", " ")
 
 
 def _parse_number(value: str) -> float | None:
@@ -183,24 +184,6 @@ def _profile_text(user: types.User) -> str:
     return f'<a href="tg://user?id={user.id}">{full_name}</a>'
 
 
-def _notify_telegram_lead(user: types.User, phone: str) -> None:
-    if not YOUR_CHAT_ID:
-        logger.warning("YOUR_CHAT_ID не задан: Telegram-заявка сохранена без уведомления")
-        return
-    username = getattr(user, "username", None)
-    username_text = f"@{html.escape(username)}" if username else "не указан"
-    bot.send_message(
-        YOUR_CHAT_ID,
-        "🔥 <b>Новая заявка</b>\n\n"
-        "📍 <b>Источник:</b> Telegram-чат\n"
-        f"👤 <b>Клиент:</b> {_profile_text(user)}\n"
-        f"📞 <b>Телефон:</b> <code>{html.escape(phone)}</code>\n"
-        f"💬 <b>Username:</b> {username_text}\n"
-        f"🆔 <b>Telegram ID:</b> <code>{user.id}</code>",
-        parse_mode="HTML",
-    )
-
-
 def _notify_webapp_lead(user: types.User, lead: dict[str, str]) -> None:
     if not YOUR_CHAT_ID:
         logger.warning("YOUR_CHAT_ID не задан: Web App-заявка сохранена без уведомления")
@@ -263,16 +246,20 @@ def _edit_screen(
 
 
 def _send_main_menu(chat_id: int, first_name: str | None = None) -> None:
-    cleanup = bot.send_message(
-        chat_id,
-        "Клавиатура обновлена.",
-        reply_markup=types.ReplyKeyboardRemove(),
-    )
+    _remove_reply_keyboard(chat_id)
     bot.send_message(
         chat_id,
         _main_text(first_name),
         parse_mode="HTML",
         reply_markup=main_menu(WEB_APP_URL),
+    )
+
+
+def _remove_reply_keyboard(chat_id: int) -> None:
+    cleanup = bot.send_message(
+        chat_id,
+        "Клавиатура обновлена.",
+        reply_markup=types.ReplyKeyboardRemove(),
     )
     try:
         bot.delete_message(chat_id, cleanup.message_id)
@@ -286,6 +273,7 @@ def configure_commands() -> None:
             [
                 types.BotCommand("start", "Запустить бота"),
                 types.BotCommand("menu", "Открыть меню"),
+                types.BotCommand("site", "Открыть Web App"),
             ]
         )
         bot.set_chat_menu_button(menu_button=types.MenuButtonCommands(type="commands"))
@@ -297,8 +285,27 @@ def configure_commands() -> None:
 @safe_handler(bot)
 def start(message: types.Message) -> None:
     calculator_sessions.pop(message.from_user.id, None)
-    waiting_for_phone.discard(message.from_user.id)
     _send_main_menu(message.chat.id, message.from_user.first_name)
+
+
+@bot.message_handler(commands=["site"])
+@safe_handler(bot)
+def site(message: types.Message) -> None:
+    calculator_sessions.pop(message.from_user.id, None)
+    _remove_reply_keyboard(message.chat.id)
+    if not WEB_APP_URL.startswith("https://"):
+        bot.send_message(
+            message.chat.id,
+            "⚠️ Web App ещё не настроен. Укажите публичный HTTPS-адрес в WEB_APP_URL.",
+        )
+        return
+    bot.send_message(
+        message.chat.id,
+        "<b>DEALER AUTO · КАТАЛОГ</b>\n\n"
+        "Автомобили в наличии и в порту, цены, фото и подробная заявка — в одном месте.",
+        parse_mode="HTML",
+        reply_markup=webapp_keyboard(WEB_APP_URL),
+    )
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -316,7 +323,6 @@ def handle_callback(call: types.CallbackQuery) -> None:
 
     if data == "menu":
         calculator_sessions.pop(user_id, None)
-        waiting_for_phone.discard(user_id)
         _edit_screen(
             call.message.chat.id,
             call.message.message_id,
@@ -325,30 +331,16 @@ def handle_callback(call: types.CallbackQuery) -> None:
         )
         return
 
-    if data == "manager":
-        calculator_sessions.pop(user_id, None)
-        waiting_for_phone.add(user_id)
-        bot.send_message(
-            call.message.chat.id,
-            "📞 <b>Связаться с менеджером</b>\n\n"
-            "Нажмите системную кнопку ниже и отправьте свой номер телефона.",
-            parse_mode="HTML",
-            reply_markup=contact_keyboard(),
-        )
-        return
-
     if data == "calculator":
-        waiting_for_phone.discard(user_id)
         calculator_message = bot.send_message(
             call.message.chat.id,
-            "🧮 <b>Предварительный расчёт</b>\n\n"
-            "Шаг 1 из 3. Введите стоимость автомобиля в рублях, например: "
-            "<code>2 500 000</code>.",
+            f"{CALCULATOR_TITLE}\n\n"
+            "<b>01 / 04</b> · Вы знаете стоимость автомобиля за границей?",
             parse_mode="HTML",
-            reply_markup=calculator_cancel(),
+            reply_markup=calculator_mode_menu(),
         )
         calculator_sessions[user_id] = {
-            "step": "price",
+            "step": "mode",
             "message_id": calculator_message.message_id,
         }
         return
@@ -360,6 +352,42 @@ def handle_callback(call: types.CallbackQuery) -> None:
         except ApiTelegramException as error:
             if error.error_code != 400:
                 raise
+        return
+
+    if data.startswith("calc:mode:"):
+        session = calculator_sessions.get(user_id)
+        if not session or session.get("step") != "mode":
+            _edit_screen(
+                call.message.chat.id,
+                call.message.message_id,
+                "Расчёт устарел. Начните заново.",
+                back_to_menu(),
+            )
+            return
+        price_mode = data.removeprefix("calc:mode:")
+        if price_mode not in {"known", "budget"}:
+            return
+        session["price_mode"] = price_mode
+        session["step"] = "price"
+        if price_mode == "budget":
+            price_prompt = (
+                "Шаг 2 из 4. На какую стоимость автомобиля вы ориентируетесь?\n\n"
+                "Укажите примерную сумму покупки автомобиля за границей. "
+                "Доставку и оформление рассчитаем отдельно.\n\n"
+                "Например: <code>3 500 000</code>."
+            )
+        else:
+            price_prompt = (
+                "Шаг 2 из 4. Введите стоимость автомобиля за границей.\n\n"
+                "Укажите известную стоимость без доставки и оформления.\n\n"
+                "Например: <code>3 500 000</code>."
+            )
+        _edit_screen(
+            call.message.chat.id,
+            call.message.message_id,
+            f"{CALCULATOR_TITLE}\n\n{price_prompt}",
+            calculator_cancel(),
+        )
         return
 
     if data.startswith("calc:age:"):
@@ -380,8 +408,8 @@ def handle_callback(call: types.CallbackQuery) -> None:
         _edit_screen(
             call.message.chat.id,
             call.message.message_id,
-            "🧮 <b>Предварительный расчёт</b>\n\n"
-            "Шаг 3 из 3. Введите объём двигателя в литрах, например: "
+            f"{CALCULATOR_TITLE}\n\n"
+            "<b>04 / 04</b> · Введите объём двигателя в литрах, например: "
             "<code>2.0</code> или <code>1,6 л</code>.",
             calculator_cancel(),
         )
@@ -391,7 +419,7 @@ def handle_callback(call: types.CallbackQuery) -> None:
         _edit_screen(
             call.message.chat.id,
             call.message.message_id,
-            "⭐ <b>Отзывы клиентов</b>\n\nСсылка на отзывы будет добавлена позже.",
+            "<b>ОТЗЫВЫ КЛИЕНТОВ</b>\n\nСсылка на отзывы появится здесь позже.",
             back_to_menu(),
         )
         return
@@ -400,7 +428,7 @@ def handle_callback(call: types.CallbackQuery) -> None:
         _edit_screen(
             call.message.chat.id,
             call.message.message_id,
-            "💬 <b>Общий чат</b>\n\nСсылка на общий чат будет добавлена позже.",
+            "<b>СООБЩЕСТВО DEALER AUTO</b>\n\nСсылка на общий чат появится здесь позже.",
             back_to_menu(),
         )
         return
@@ -409,7 +437,7 @@ def handle_callback(call: types.CallbackQuery) -> None:
         _edit_screen(
             call.message.chat.id,
             call.message.message_id,
-            "❓ <b>Популярные вопросы</b>\n\nВыберите вопрос:",
+            "<b>ЧАСТЫЕ ВОПРОСЫ</b>\n\nВыберите тему:",
             faq_menu(),
         )
         return
@@ -429,49 +457,9 @@ def handle_callback(call: types.CallbackQuery) -> None:
         _edit_screen(
             call.message.chat.id,
             call.message.message_id,
-            "🌐 <b>Другие соцсети</b>\n\nВыберите площадку:",
+            "<b>МЫ В СОЦСЕТЯХ</b>\n\nВыберите площадку:",
             socials_menu(),
         )
-
-
-@bot.message_handler(content_types=["contact"])
-@safe_handler(bot)
-def handle_contact(message: types.Message) -> None:
-    user_id = message.from_user.id
-    if user_id not in waiting_for_phone:
-        _send_main_menu(message.chat.id, message.from_user.first_name)
-        return
-    if message.contact.user_id and message.contact.user_id != user_id:
-        bot.send_message(
-            message.chat.id,
-            "Отправьте свой номер телефона с помощью системной кнопки.",
-            reply_markup=contact_keyboard(),
-        )
-        return
-    phone = (message.contact.phone_number or "").strip()
-    if not 10 <= len(re.sub(r"\D", "", phone)) <= 15:
-        bot.send_message(
-            message.chat.id,
-            "Не удалось проверить номер. Попробуйте отправить контакт ещё раз.",
-            reply_markup=contact_keyboard(),
-        )
-        return
-
-    save_lead(
-        user_id,
-        message.from_user.username,
-        "telegram",
-        "Связь с менеджером",
-        phone,
-    )
-    _notify_telegram_lead(message.from_user, phone)
-    waiting_for_phone.discard(user_id)
-    bot.send_message(
-        message.chat.id,
-        "✅ Заявка принята. Менеджер свяжется с вами в ближайшее время.",
-        reply_markup=types.ReplyKeyboardRemove(),
-    )
-    _send_main_menu(message.chat.id, message.from_user.first_name)
 
 
 @bot.message_handler(content_types=["web_app_data"])
@@ -503,14 +491,6 @@ def handle_webapp_data(message: types.Message) -> None:
 @safe_handler(bot)
 def handle_text(message: types.Message) -> None:
     user_id = message.from_user.id
-    if user_id in waiting_for_phone:
-        bot.send_message(
-            message.chat.id,
-            "Для безопасности отправьте свой контакт системной кнопкой ниже.",
-            reply_markup=contact_keyboard(),
-        )
-        return
-
     session = calculator_sessions.get(user_id)
     if not session:
         _send_main_menu(message.chat.id, message.from_user.first_name)
@@ -518,11 +498,15 @@ def handle_text(message: types.Message) -> None:
 
     if session.get("step") == "price":
         price_rub = _parse_rub_price(message.text or "")
-        if price_rub is None or not 50_000 <= price_rub <= 50_000_000:
+        if (
+            price_rub is None
+            or not 50_000 <= price_rub <= 50_000_000
+            or price_rub % 10_000 != 0
+        ):
             bot.send_message(
                 message.chat.id,
-                "Введите стоимость от 50 000 до 50 000 000 ₽, например: "
-                "<code>2 500 000</code>.",
+                "Введите стоимость от 50 000 до 50 000 000 ₽ с шагом 10 000 ₽, "
+                "например: <code>2 500 000</code>.",
                 parse_mode="HTML",
             )
             return
@@ -531,18 +515,22 @@ def handle_text(message: types.Message) -> None:
         _edit_screen(
             message.chat.id,
             int(session["message_id"]),
-            "🧮 <b>Предварительный расчёт</b>\n\n"
-            "Шаг 2 из 3. Выберите возраст автомобиля:",
+            f"{CALCULATOR_TITLE}\n\n"
+            "<b>03 / 04</b> · Выберите возраст автомобиля:",
             age_menu(),
         )
         return
 
     if session.get("step") == "engine":
         engine_liters = _parse_engine_liters(message.text or "")
-        if engine_liters is None or not 0.5 <= engine_liters <= 10:
+        if (
+            engine_liters is None
+            or not 0.5 <= engine_liters <= 10
+            or abs(engine_liters * 10 - round(engine_liters * 10)) > 1e-9
+        ):
             bot.send_message(
                 message.chat.id,
-                "Введите объём двигателя от 0.5 до 10 л, например: "
+                "Введите объём двигателя от 0.5 до 10 л с шагом 0.1 л, например: "
                 "<code>2.0</code> или <code>1,6 л</code>.",
                 parse_mode="HTML",
             )
@@ -553,22 +541,28 @@ def handle_text(message: types.Message) -> None:
             car_price_rub=int(session["car_price_rub"]),
             age=age,
             engine_cc=engine_cc,
-            eur_rub_rate=EUR_RUB_RATE,
-            delivery_rub=DELIVERY_COST_RUB,
-            other_costs_rub=OTHER_COSTS_RUB,
+            eur_rub_rate=WEBAPP_EUR_RUB_RATE,
+            delivery_rub=WEBAPP_DELIVERY_AND_EXPENSES_RUB,
+            other_costs_rub=0,
+        )
+        is_budget = session.get("price_mode") == "budget"
+        price_label = "Ориентир на автомобиль" if is_budget else "Автомобиль"
+        delivery_and_costs = calculation.delivery_rub + calculation.other_costs_rub
+        budget_note = (
+            "Расчёт выполнен по указанной ориентировочной стоимости. "
+            if is_budget
+            else ""
         )
         result_text = (
-            "🧮 <b>Ориентировочный расчёт</b>\n\n"
-            f"🚘 Стоимость автомобиля: <b>{_format_rub(calculation.car_price_rub)} ₽</b>\n"
-            f"💱 Для расчёта: <b>{_format_eur(calculation.car_price_eur)} €</b>\n"
+            "<b>ВАШ ПРЕДВАРИТЕЛЬНЫЙ РАСЧЁТ</b>\n"
+            "<i>Сумма может уточняться при подборе автомобиля</i>\n\n"
+            f"🚘 {price_label}: <b>{_format_rub(calculation.car_price_rub)} ₽</b>\n"
             f"🛃 Таможенная пошлина: <b>{_format_rub(calculation.duty_rub)} ₽</b>\n"
-            f"🚚 Доставка: <b>{_format_rub(calculation.delivery_rub)} ₽</b>\n"
-            f"📄 Прочие расходы: <b>{_format_rub(calculation.other_costs_rub)} ₽</b>\n\n"
-            f"Итого ориентировочно: <b>{_format_rub(calculation.total_rub)} ₽</b>\n\n"
-            f"<i>Курс расчёта: 1 € = {EUR_RUB_RATE:g} ₽. "
-            f"Возраст: {AGE_LABELS[age]}, двигатель: {engine_liters:.1f} л "
-            f"({_format_rub(engine_cc)} см³). Расчёт предварительный: итог зависит "
-            "от курса, характеристик автомобиля, утилизационного сбора и оформления.</i>"
+            f"🚚 Доставка и расходы: <b>{_format_rub(delivery_and_costs)} ₽</b>\n\n"
+            f"<b>Итого: {_format_rub(calculation.total_rub)} ₽</b>\n\n"
+            f"<i>{budget_note}Предварительный расчёт по условному курсу "
+            f"1 € = {WEBAPP_EUR_RUB_RATE:g} ₽. "
+            "Точную стоимость уточнит менеджер.</i>"
         )
         _edit_screen(
             message.chat.id,

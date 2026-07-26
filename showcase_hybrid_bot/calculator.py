@@ -1,11 +1,14 @@
 """Предварительный расчёт стоимости ввоза автомобиля для физического лица."""
 
+import math
 from dataclasses import dataclass
 
 
 AGE_UNDER_3 = "under_3"
 AGE_3_TO_5 = "3_to_5"
 AGE_OVER_5 = "over_5"
+WEBAPP_EUR_RUB_RATE = 100.0
+WEBAPP_DELIVERY_AND_EXPENSES_RUB = 450_000
 
 AGE_LABELS = {
     AGE_UNDER_3: "до 3 лет",
@@ -30,6 +33,11 @@ def _rate_by_engine(engine_cc: int, brackets: tuple[tuple[int, float], ...]) -> 
         if engine_cc <= upper_bound:
             return rate
     return brackets[-1][1]
+
+
+def _round_like_javascript(value: float) -> int:
+    """Округляет неотрицательное число как Math.round в Web App."""
+    return math.floor(value + 0.5)
 
 
 def calculate_duty_eur(car_price_eur: float, age: str, engine_cc: int) -> float:
@@ -90,7 +98,7 @@ def calculate_total_from_rub(
         raise ValueError("Курс евро должен быть больше нуля")
     car_price_eur = car_price_rub / eur_rub_rate
     duty_eur = calculate_duty_eur(car_price_eur, age, engine_cc)
-    duty_rub = round(duty_eur * eur_rub_rate)
+    duty_rub = _round_like_javascript(duty_eur * eur_rub_rate)
     return Calculation(
         car_price_eur=car_price_eur,
         duty_eur=duty_eur,
