@@ -59,13 +59,13 @@ class HybridBotTest(unittest.TestCase):
         self.assertEqual(
             labels,
             [
-                "🚗 Смотреть автомобили",
-                "🧮 Рассчитать",
-                "💬 Менеджер",
+                "🚗 Автомобили в наличии",
+                "🧮 Калькулятор",
+                "💬 Связаться",
                 "⭐ Отзывы",
-                "◌ Сообщество",
-                "❔ Вопросы",
-                "◎ Соцсети",
+                "💬 Общий чат",
+                "❓ Вопросы",
+                "🌐 Соцсети",
             ],
         )
         buttons = [
@@ -74,7 +74,7 @@ class HybridBotTest(unittest.TestCase):
             for button in row
         ]
         self.assertEqual(buttons[0].web_app.url, "https://example.com/webapp")
-        self.assertEqual(buttons[-1].text, "◎ Соцсети")
+        self.assertEqual(buttons[-1].text, "🌐 Соцсети")
 
     def test_invalid_webapp_url_uses_clear_placeholder(self) -> None:
         buttons = [
@@ -91,7 +91,7 @@ class HybridBotTest(unittest.TestCase):
                 for row in keyboards_module.main_menu("https://example.com/webapp").keyboard
                 for button in row
             ]
-        manager_button = next(button for button in buttons if button.text == "💬 Менеджер")
+        manager_button = next(button for button in buttons if button.text == "💬 Связаться")
         self.assertEqual(manager_button.url, "https://t.me/dealer_auto")
 
     def test_manager_button_uses_placeholder_without_link(self) -> None:
@@ -101,7 +101,7 @@ class HybridBotTest(unittest.TestCase):
                 for row in keyboards_module.main_menu("https://example.com/webapp").keyboard
                 for button in row
             ]
-        manager_button = next(button for button in buttons if button.text == "💬 Менеджер")
+        manager_button = next(button for button in buttons if button.text == "💬 Связаться")
         self.assertEqual(manager_button.callback_data, "stub:manager")
 
     def test_site_command_sends_webapp_button(self) -> None:
@@ -115,7 +115,7 @@ class HybridBotTest(unittest.TestCase):
 
         markup = send_message.call_args_list[1].kwargs["reply_markup"]
         button = markup.keyboard[0][0]
-        self.assertEqual(button.text, "🚗 Открыть каталог")
+        self.assertEqual(button.text, "🚗 Открыть Web App")
         self.assertEqual(button.web_app.url, "https://example.com/webapp")
 
     def test_site_command_is_registered(self) -> None:
@@ -154,7 +154,7 @@ class HybridBotTest(unittest.TestCase):
         self.assertIn("Доставка и расходы", final_text)
         self.assertIn("Расчёт выполнен по указанной ориентировочной стоимости", final_text)
         result_markup = edit_message.call_args.kwargs["reply_markup"]
-        self.assertEqual(result_markup.keyboard[0][0].text, "🟠 Обсудить с менеджером")
+        self.assertEqual(result_markup.keyboard[0][0].text, "🟠 Сделать заказ")
 
     def test_calculator_uses_webapp_input_steps(self) -> None:
         bot_module.calculator_sessions[101] = {

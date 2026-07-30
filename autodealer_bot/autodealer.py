@@ -5,8 +5,9 @@
 import html
 from datetime import datetime
 import telebot
+from telebot.apihelper import ApiTelegramException
 
-from .config import TOKEN, YOUR_CHAT_ID, DB_NAME
+from .config import PROJECT_ROOT, TOKEN, YOUR_CHAT_ID, DB_NAME
 from .database import init_db, is_new_instagram_user, save_instagram_user
 from .keyboards import get_main_keyboard
 from .logger import log_msg, log_admin, log_error, log_system
@@ -15,6 +16,22 @@ if not TOKEN:
     raise RuntimeError("Не задан BOT_TOKEN. Укажите его в .env или переменных окружения.")
 
 bot = telebot.TeleBot(TOKEN)
+MENU_COVER_PATH = PROJECT_ROOT / "autodealer_bot" / "assets" / "menu-cover.jpg"
+
+
+def send_main_menu(chat_id: int, welcome_text: str) -> None:
+    """Отправляет главное меню с обложкой, а при ошибке — обычное сообщение."""
+    try:
+        with MENU_COVER_PATH.open("rb") as local_cover:
+            bot.send_photo(
+                chat_id,
+                local_cover,
+                caption=welcome_text,
+                reply_markup=get_main_keyboard(),
+            )
+    except (OSError, ApiTelegramException) as error:
+        log_error("send_main_menu", error)
+        bot.send_message(chat_id, welcome_text, reply_markup=get_main_keyboard())
 
 
 # ===================== УВЕДОМЛЕНИЯ =====================
@@ -60,7 +77,7 @@ def start(message: telebot.types.Message):
     else:
         welcome_text = "👋 Привет! Это бот Dealer Auto\n\n👇 Вот полезные ссылки 👇"
 
-    bot.send_message(message.chat.id, welcome_text, reply_markup=get_main_keyboard())
+    send_main_menu(message.chat.id, welcome_text)
 
 
 @bot.message_handler(commands=['db'])

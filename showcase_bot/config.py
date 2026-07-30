@@ -40,6 +40,7 @@ def normalize_telegram_url(value: str) -> str:
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 DB_NAME = os.getenv("DB_NAME", str(PROJECT_DIR / "showcase_leads.db"))
 SUPPORT_URL = normalize_telegram_url(os.getenv("SUPPORT_URL", ""))
+MENU_COVER_FILE_ID = os.getenv("MENU_COVER_FILE_ID", "")
 
 try:
     YOUR_CHAT_ID = int(os.getenv("YOUR_CHAT_ID", ""))

@@ -12,7 +12,14 @@ from telebot.apihelper import ApiTelegramException
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from showcase_bot.config import BOT_TOKEN, DB_NAME, SHOWCASES, SUPPORT_URL, YOUR_CHAT_ID
+from showcase_bot.config import (
+    BOT_TOKEN,
+    DB_NAME,
+    MENU_COVER_FILE_ID,
+    SHOWCASES,
+    SUPPORT_URL,
+    YOUR_CHAT_ID,
+)
 from showcase_bot.database import init_db, save_lead
 from showcase_bot.keyboards import (
     get_catalog_keyboard,
@@ -30,6 +37,8 @@ if not BOT_TOKEN:
 bot = telebot.TeleBot(BOT_TOKEN)
 awaiting_lead_from: set[int] = set()
 SHOWCASES_BY_KEY = {item["key"]: item for item in SHOWCASES}
+MENU_COVER_PATH = Path(__file__).resolve().parent / "menu-cover.jpg"
+_menu_cover_file_id_logged = False
 MAIN_MENU_TEXT = (
     "<b>Autobot — боты для авто-бизнеса</b>\n\n"
     "Покажу готовые решения и помогу собрать бота под вашу задачу."
@@ -48,12 +57,53 @@ def safe_handler(handler):
 
 
 def send_main_menu(chat_id: int) -> None:
-    bot.send_message(
-        chat_id,
-        MAIN_MENU_TEXT,
-        parse_mode="HTML",
-        reply_markup=get_main_keyboard(),
-    )
+    """Отправляет меню через Telegram file_id, если он уже сохранён."""
+    global _menu_cover_file_id_logged
+
+    try:
+        if MENU_COVER_FILE_ID:
+            bot.send_photo(
+                chat_id,
+                MENU_COVER_FILE_ID,
+                caption=MAIN_MENU_TEXT,
+                parse_mode="HTML",
+                reply_markup=get_main_keyboard(),
+            )
+            return
+
+        with MENU_COVER_PATH.open("rb") as cover:
+            sent_message = bot.send_photo(
+                chat_id,
+                cover,
+                caption=MAIN_MENU_TEXT,
+                parse_mode="HTML",
+                reply_markup=get_main_keyboard(),
+            )
+
+        if not _menu_cover_file_id_logged and sent_message.photo:
+            logger.info(
+                "Добавьте в showcase_bot/.env: MENU_COVER_FILE_ID=%s",
+                sent_message.photo[-1].file_id,
+            )
+            _menu_cover_file_id_logged = True
+    except (OSError, ApiTelegramException):
+        logger.exception("Не удалось отправить обложку главного меню")
+        bot.send_message(
+            chat_id,
+            MAIN_MENU_TEXT,
+            parse_mode="HTML",
+            reply_markup=get_main_keyboard(),
+        )
+
+
+def show_main_menu(call: telebot.types.CallbackQuery) -> None:
+    """Удаляет текущий экран и показывает главное меню с обложкой."""
+    try:
+        bot.delete_message(call.message.chat.id, call.message.message_id)
+    except ApiTelegramException as error:
+        if error.error_code != 400:
+            raise
+    send_main_menu(call.message.chat.id)
 
 
 def edit_screen(
@@ -63,6 +113,19 @@ def edit_screen(
     parse_mode: str | None = None,
 ) -> None:
     """Обновляет экран бота в текущем сообщении."""
+    if getattr(call.message, "content_type", "") == "photo":
+        try:
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+        except ApiTelegramException as error:
+            if error.error_code != 400:
+                raise
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            parse_mode=parse_mode,
+            reply_markup=reply_markup,
+        )
+        return
     try:
         bot.edit_message_text(
             text,
@@ -100,7 +163,7 @@ def handle_callback(call: telebot.types.CallbackQuery) -> None:
 
     if data == "menu":
         awaiting_lead_from.discard(call.from_user.id)
-        edit_screen(call, MAIN_MENU_TEXT, get_main_keyboard(), parse_mode="HTML")
+        show_main_menu(call)
         return
 
     if data == "catalog":
@@ -137,7 +200,7 @@ def handle_callback(call: telebot.types.CallbackQuery) -> None:
 
     if data == "lead:cancel":
         awaiting_lead_from.discard(call.from_user.id)
-        edit_screen(call, "Заявка отменена.", get_main_keyboard())
+        show_main_menu(call)
         return
 
     if data == "support":
@@ -185,8 +248,8 @@ def receive_lead(message: telebot.types.Message) -> None:
     bot.send_message(
         message.chat.id,
         "✅ Заявка принята. Скоро свяжемся с вами.",
-        reply_markup=get_main_keyboard(),
     )
+    send_main_menu(message.chat.id)
 
 
 def run_polling() -> None:

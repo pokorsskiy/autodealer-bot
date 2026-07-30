@@ -26,29 +26,29 @@ def _webapp_button(text: str, web_app_url: str) -> types.InlineKeyboardButton:
 
 def main_menu(web_app_url: str) -> types.InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup(row_width=2)
-    markup.add(_webapp_button("🚗 Смотреть автомобили", web_app_url))
+    markup.add(_webapp_button("🚗 Автомобили в наличии", web_app_url))
     markup.add(
-        types.InlineKeyboardButton("🧮 Рассчитать", callback_data="calculator"),
-        _url_or_stub("💬 Менеджер", MANAGER_URL, "manager"),
+        types.InlineKeyboardButton("🧮 Калькулятор", callback_data="calculator"),
+        _url_or_stub("💬 Связаться", MANAGER_URL, "manager"),
         (
             types.InlineKeyboardButton("⭐ Отзывы", url=REVIEWS_URL)
             if REVIEWS_URL
             else types.InlineKeyboardButton("⭐ Отзывы", callback_data="reviews")
         ),
         (
-            types.InlineKeyboardButton("◌ Сообщество", url=COMMUNITY_URL)
+            types.InlineKeyboardButton("💬 Общий чат", url=COMMUNITY_URL)
             if COMMUNITY_URL
-            else types.InlineKeyboardButton("◌ Сообщество", callback_data="community")
+            else types.InlineKeyboardButton("💬 Общий чат", callback_data="community")
         ),
-        types.InlineKeyboardButton("❔ Вопросы", callback_data="faq"),
-        types.InlineKeyboardButton("◎ Соцсети", callback_data="socials"),
+        types.InlineKeyboardButton("❓ Вопросы", callback_data="faq"),
+        types.InlineKeyboardButton("🌐 Соцсети", callback_data="socials"),
     )
     return markup
 
 
 def webapp_keyboard(web_app_url: str) -> types.InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup()
-    markup.add(_webapp_button("🚗 Открыть каталог", web_app_url))
+    markup.add(_webapp_button("🚗 Открыть Web App", web_app_url))
     return markup
 
 
@@ -60,7 +60,7 @@ def back_to_menu() -> types.InlineKeyboardMarkup:
 
 def calculator_cancel() -> types.InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("× Отменить расчёт", callback_data="calc:cancel"))
+    markup.add(types.InlineKeyboardButton("Отменить расчёт", callback_data="calc:cancel"))
     return markup
 
 
@@ -68,14 +68,14 @@ def calculator_mode_menu() -> types.InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
         types.InlineKeyboardButton(
-            "Знаю стоимость автомобиля",
+            "Да, знаю стоимость",
             callback_data="calc:mode:known",
         ),
         types.InlineKeyboardButton(
-            "Укажу ориентир по бюджету",
+            "Нет, укажу ориентир",
             callback_data="calc:mode:budget",
         ),
-        types.InlineKeyboardButton("× Отменить расчёт", callback_data="calc:cancel"),
+        types.InlineKeyboardButton("Отменить расчёт", callback_data="calc:cancel"),
     )
     return markup
 
@@ -94,8 +94,8 @@ def age_menu() -> types.InlineKeyboardMarkup:
 def result_menu() -> types.InlineKeyboardMarkup:
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
-        _url_or_stub("🟠 Обсудить с менеджером", MANAGER_URL, "manager"),
-        types.InlineKeyboardButton("↻ Новый расчёт", callback_data="calculator"),
+        _url_or_stub("🟠 Сделать заказ", MANAGER_URL, "manager"),
+        types.InlineKeyboardButton("🧮 Новый расчёт", callback_data="calculator"),
         types.InlineKeyboardButton("← Назад в меню", callback_data="menu"),
     )
     return markup

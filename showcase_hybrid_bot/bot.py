@@ -93,16 +93,14 @@ if not TOKEN:
 
 bot = telebot.TeleBot(TOKEN)
 calculator_sessions: dict[int, dict[str, object]] = {}
-CALCULATOR_TITLE = "<b>РАСЧЁТ СТОИМОСТИ</b>\n<i>Предварительно · без обязательств</i>"
+CALCULATOR_TITLE = "🧮 <b>Предварительный расчёт</b>"
 
 
 def _main_text(first_name: str | None = None) -> str:
     name = f", {html.escape(first_name)}" if first_name else ""
     return (
-        f"<b>DEALER AUTO{name}</b>\n"
-        "<i>Автомобили из-за рубежа — без лишнего шума</i>\n\n"
-        "Выберите автомобиль в каталоге или получите предварительный расчёт. "
-        "Когда будете готовы — менеджер поможет с деталями сделки."
+        f"👋 <b>Добро пожаловать{name}!</b>\n\n"
+        "Здесь можно посмотреть автомобили, рассчитать стоимость и связаться с менеджером."
     )
 
 
@@ -301,8 +299,8 @@ def site(message: types.Message) -> None:
         return
     bot.send_message(
         message.chat.id,
-        "<b>DEALER AUTO · КАТАЛОГ</b>\n\n"
-        "Автомобили в наличии и в порту, цены, фото и подробная заявка — в одном месте.",
+        "🚗 <b>Каталог автомобилей</b>\n\n"
+        "Здесь есть автомобили в наличии и в порту — с ценами, фотографиями и формой заявки.",
         parse_mode="HTML",
         reply_markup=webapp_keyboard(WEB_APP_URL),
     )
@@ -335,7 +333,7 @@ def handle_callback(call: types.CallbackQuery) -> None:
         calculator_message = bot.send_message(
             call.message.chat.id,
             f"{CALCULATOR_TITLE}\n\n"
-            "<b>01 / 04</b> · Вы знаете стоимость автомобиля за границей?",
+            "Шаг 1 из 4. Вы знаете стоимость автомобиля за границей?",
             parse_mode="HTML",
             reply_markup=calculator_mode_menu(),
         )
@@ -409,7 +407,7 @@ def handle_callback(call: types.CallbackQuery) -> None:
             call.message.chat.id,
             call.message.message_id,
             f"{CALCULATOR_TITLE}\n\n"
-            "<b>04 / 04</b> · Введите объём двигателя в литрах, например: "
+            "Шаг 4 из 4. Введите объём двигателя в литрах, например: "
             "<code>2.0</code> или <code>1,6 л</code>.",
             calculator_cancel(),
         )
@@ -419,7 +417,7 @@ def handle_callback(call: types.CallbackQuery) -> None:
         _edit_screen(
             call.message.chat.id,
             call.message.message_id,
-            "<b>ОТЗЫВЫ КЛИЕНТОВ</b>\n\nСсылка на отзывы появится здесь позже.",
+            "⭐ <b>Отзывы клиентов</b>\n\nСсылка на отзывы будет добавлена позже.",
             back_to_menu(),
         )
         return
@@ -428,7 +426,7 @@ def handle_callback(call: types.CallbackQuery) -> None:
         _edit_screen(
             call.message.chat.id,
             call.message.message_id,
-            "<b>СООБЩЕСТВО DEALER AUTO</b>\n\nСсылка на общий чат появится здесь позже.",
+            "💬 <b>Общий чат</b>\n\nСсылка на общий чат будет добавлена позже.",
             back_to_menu(),
         )
         return
@@ -437,7 +435,7 @@ def handle_callback(call: types.CallbackQuery) -> None:
         _edit_screen(
             call.message.chat.id,
             call.message.message_id,
-            "<b>ЧАСТЫЕ ВОПРОСЫ</b>\n\nВыберите тему:",
+            "❓ <b>Популярные вопросы</b>\n\nВыберите вопрос:",
             faq_menu(),
         )
         return
@@ -457,7 +455,7 @@ def handle_callback(call: types.CallbackQuery) -> None:
         _edit_screen(
             call.message.chat.id,
             call.message.message_id,
-            "<b>МЫ В СОЦСЕТЯХ</b>\n\nВыберите площадку:",
+            "🌐 <b>Другие соцсети</b>\n\nВыберите площадку:",
             socials_menu(),
         )
 
@@ -516,7 +514,7 @@ def handle_text(message: types.Message) -> None:
             message.chat.id,
             int(session["message_id"]),
             f"{CALCULATOR_TITLE}\n\n"
-            "<b>03 / 04</b> · Выберите возраст автомобиля:",
+            "Шаг 3 из 4. Выберите возраст автомобиля:",
             age_menu(),
         )
         return
@@ -554,8 +552,7 @@ def handle_text(message: types.Message) -> None:
             else ""
         )
         result_text = (
-            "<b>ВАШ ПРЕДВАРИТЕЛЬНЫЙ РАСЧЁТ</b>\n"
-            "<i>Сумма может уточняться при подборе автомобиля</i>\n\n"
+            "🧮 <b>Ориентировочный расчёт</b>\n\n"
             f"🚘 {price_label}: <b>{_format_rub(calculation.car_price_rub)} ₽</b>\n"
             f"🛃 Таможенная пошлина: <b>{_format_rub(calculation.duty_rub)} ₽</b>\n"
             f"🚚 Доставка и расходы: <b>{_format_rub(delivery_and_costs)} ₽</b>\n\n"
